@@ -1,0 +1,12 @@
+.idea
+.emacs.d/
+.packages
+packages
+android
+android.iml
+build
+flutter_experiments_android.iml
+flutter_experiments.iml
+ios
+pubspec.lock
+

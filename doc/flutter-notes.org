@@ -1,0 +1,1168 @@
+#+TODO: TODO IN-PROGRESS LATER DONE
+
+* Flutter Installation
+
+** Installation - followed steps in https://flutter.io/setup-linux/ https://flutter.io/setup-windows/ https://flutter.io/setup-macos/
+
+- [X] clone flutter repo
+- [X] setup path
+- [X] flutter doctor
+  - [X] missing Android SDK - installed Android Studio
+  - [X] missing IntelliJ Plugin - installed  (settings, plugins)
+  - [X] missing Dart Plugin - installed from idea (settings, plugins)
+- [X] phone: enable developer mode
+- [-] *Android Studio*: downloaded and unzipped to File -> /home/mzimmermann/software/android/studio/android-studio/
+  - [X] bin/studio.sh - go through setup
+    - [X] This is asking to set "Android SDK Location" - apparently this is where app preferences are stored, so we separate this from the "Android Studio" location in /home/mzimmermann/software/android/studio/android-studio/
+      - [X] set to /home/mzimmermann/software/android/studio/sdk
+    - [X] Look at https://developer.android.com/studio/run/emulator.html#vm-linux how to enable KVM to support acceleration.
+  - [ ] Set up the Android emulator *Android devices configuration - must run *Android Studio* - android-studio.sh
+    - [ ] Then tools -> Android -> AVD Managed
+  - [X] flutter doctor OK .. hhhm maybe adb message
+- [X] Test create my first app
+  - [X] cd /home/mzimmermann/dev/my-projects-source/flutter/
+  - [X] *flutter create my_first_flutter_app*
+  - [X] cd my_first_flutter_app 
+  - [X] flutter run
+    - [X] error message : *adb server version (32) doesn't match this client (39); killing*
+      - [X] So I did :
+        - [X] create desktop shortcut to IntelliJ (not using the Android SDK)
+        - [X] run IntelliJ desktop shortcut: Exec=/home/mzimmermann/software/ides/Intellij-IDEA/EAP/idea-EAP/bin/idea.sh /home/mzimmermann/dev/my-projects-source/flutter/my_first_flutter_app/
+          - [X] tools-> Android SDK, set to /home/mzimmermann/software/android/studio/sdk
+          - [X] run->run
+            - [X] Unable to locate a development device; please run 'flutter doctor' for information about installing additional components.
+            - [X] Solved by: Tools->Android->Create AVD (virtual device)
+              - [X] 480x800, 4''
+              - [X] used Android Jellybean, 4.2, Download ( thi sshows as Intel x86 Atom system image) 
+              - [X] still no luck
+              - [X] *installed tools-> Android SDK, selected JellyBena 4.2
+  - [X] After all the above, still *adb server version (32) doesn't match this client (39); killing*
+    - [X] *This error went away after I properly set a Android SDK on the project!!!* (File->Project Structure from IDEA)
+
+
+getting this exception on startup
+
+
+2 things:
+
+1. =file->settings->appearance and behavior->system settings->android SDK= - this is the same as =tools->android->SDK manager=. Defines SDKs on the system, except those needed are Android specific.
+2. =file->project structure= - This is where I had to add "Project SDK", and point it to one of the Android specific SDK2 in item 1 (e.g. Android API 17 Platform). Otherwise  ~flutter run~ would respond with *adb server version (32) doesn't match this client (39); killing*
+
+
+Also
+
+Cannot start compilation: the output path is not specified for module "my_first_flutter_app_android".
+Specify the output path in the Project Structure dialog
+
+Flutter reported:
+
+https://github.com/flutter/flutter/issues/11094
+
+Fixed by selecting, in emulator, software emulation - later installed Nvidia driver instead of nouveau.
+
+* TODOs - FAQ, Flutter community questions and extracted solutions
+
+- [X] Visible/Invisible/Opaque in Flutter: (https://stackoverflow.com/questions/44489804/show-hide-widgets-on-flutter-programmatically) (that is Android)
+- [X] I have a question regarding sizing of a CustomPaint widget. Or rather, regarding existence of a layout widget, that would give a CustomPaint a size that is as large as possible, given there are other widgets around the CustomPaint. 
+
+  To make this hopefully more concrete (trying my best but not sure this is explained well): I am experimenting writing a charting widget. It is an extension of CustomPaint, and it has no children, everything is painted using a CustomPainter on canvas. 
+  
+  For a charting widget, when participating in a layout, ideally we would want to give it a size as big as possible, but no bigger; this size would have to be calculated and provided by a (parent) layout widget. Let me talk about width only but similar thouight applies to height. For example, a chart may be placed in a row between two texts, simplified:  `Row(Text('>>>'),  chart, Text('<<<'))`. It is now enough to define for example:
+  ```dart
+  new Chart( // extends CustomPaint
+    size: new Size(300.0, 600.0),
+    painter: new ChartPainter(  // extends CustomPainter
+    ),
+  ),
+  ```
+  Because the fixed size limits the chart size. Instead of the fixed size, I'd like to wrap the Chart into a layout that provides the maximum size to the chart (after calculating the sizes needed to the Texts in the above example) - so when calling the `ChartPainter.paint(canvas, size)`, the calculated size would be passed - one that is "as large as possible but no larger" given the other widgets participating in the layout. I went over probably all the Layout widgets, and tried a few but cannot really find one that would provide the above behavior. Would someone have any suggestions? (I was thinking SO but this is probably to vague still). Appreciate any hints or suggestions, thanks.
+  *Answer: Use Expanded!!!*
+  *For some detail follow ups, see https://stackoverflow.com/questions/45875334/how-to-achieve-expansion-of-a-widget-in-both-vertical-height-and-horizontal-w .*
+- [ ] *You generally don't set properties with Flutter's functional/reactive APIs*. Instead, wrap your expansion panel list in a custom StatefulWidget. See https://flutter.io/tutorials/interactive/ for an introduction. /What does this mean to "set properties*/
+- [ ]  *but if you pop the page, it is destroyed* - /what does is mean to pop the page, in practice?/
+
+
+* TODO Flutter Bugs
+
+** Initially, the window size is 0 in this code - see https://github.com/flutter/flutter/issues/11697
+
+** ~flutter package get~ picks up lines commented out in pubspec.yaml?
+* Investigate Data as JSON - an example
+
+#+BEGIN_SRC javascript
+$(function () {
+$.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=range.json&callback=?', function(data) {
+
+$('#container').highcharts({
+
+chart: {
+type: 'arearange'
+},
+
+title: {
+text: 'Temperature variation by day'
+},
+
+xAxis: {
+type: 'datetime'
+},
+
+yAxis: {
+title: {
+text: null
+}
+},
+
+tooltip: {
+crosshairs: true,
+shared: true,
+valueSuffix: '°C'
+},
+
+legend: {
+enabled: false
+},
+
+series: [{
+name: 'Temperatures',
+data: JSON,
+color: '#FF0000',
+negativeColor: '#0088FF'
+}]
+
+});
+});
+
+});
+
+var JSON = [
+{ name: 'Pay Off',
+data: [ [2850,0], 
+[3135,0], 
+[3420,0], 
+[3705,0], 
+[3990,0], 
+[4275,0], 
+[4560,0], 
+[4845,0], 
+[5130,0], 
+[5415,0], 
+[5700,0], 
+[5985,285],
+[6270,570], 
+[6555,855], 
+[6840,1140],
+[7125,1425],
+[7410,1710],
+[7695,1995],
+[7980,2280],
+[8265,2565],
+[8550,2850]
+]
+},
+{
+name: 'Profit',
+data: [ [2850,-250],    
+[3135,-250],
+[3420,-250],
+[3705,-250],
+[3990,-250],
+[4275,-250],
+[4560,-250],
+[4845,-250],
+[5130,-250],
+[5415,-250],
+[5700,-250],
+[5985,35],
+[6270,320],
+[6555,605],
+[6840,890],
+[7125,1175],
+[7410,1460],
+[7695,1745],
+[7980,2030],
+[8265,2315],
+[8550,2600]
+]
+}
+];
+
+
+#+END_SRC
+
+* Android to Flutter 
+
+
+** Type mapping Flutter to Android and iOS
+
+The following table shows how Dart values are received on the platform side and vice versa:
+  
+| Dart                       | Android              | iOS                                            |
+|----------------------------+----------------------+------------------------------------------------|
+| null                       | null                 | nil (NSNull when nested)                       |
+| bool                       | java.lang.Boolean    | NSNumber numberWithBool:                       |
+| int                        | java.lang.Integer    | NSNumber numberWithInt:                        |
+| int, if 32 bits not enough | java.lang.Long       | NSNumber numberWithLong:                       |
+| int, if 64 bits not enough | java.math.BigInteger | FlutterStandardBigInteger                      |
+| double                     | java.lang.Double     | NSNumber numberWithDouble:                     |
+| String                     | java.lang.String     | NSString                                       |
+| Uint8List                  | byte[]               | FlutterStandardTypedData typedDataWithBytes:   |
+| Int32List                  | int[]                | FlutterStandardTypedData typedDataWithInt32:   |
+| Int64List                  | long[]               | FlutterStandardTypedData typedDataWithInt64:   |
+| Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
+| List                       | java.util.ArrayList  | NSArray                                        |
+| Map                        | java.util.HashMap    | NSDictionary                                   |
+* Flutter admin, upgrades, packages, pub etc - ~flutter action~ commands. /action/ = channel, upgrade, package etc. 
+** *pub*, *flutter package*, *flutter pub* , *flutter create project* commands. 
+*** src_sh{flutter build clean # clean build}
+*** ~flutter create --template=package my_package~                    - create a Flutter project to be used as a library package. See https://flutter.io/developing-packages/
+*** ~flutter create myapp~                                            - *what is the difference here?*
+*** ~flutter create --org com.example --template=plugin my_package~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
+*** ~cd my_package; flutter packages pub publish --dry-run~           - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.io/developing-packages/
+*** ~cd my_package; flutter pub get~                                  - get the latest version of dependencies packages, as defined in my_package/pubspec.yaml to ~/.pub_cache. Writes out pubspec.lock and .packages . See https://flutter.io/using-packages/ . *How is it different from ~flutter packages pub get~  which also works?*
+*** Error getting packages: flutter pub get "Resolving dependencies: The Flutter SDK is not available."
+
+When a project has flutter: sdk: flutter in its pubspec.yaml, pub get fails with exit code 69, and message "Resolving dependencies... The Flutter SDK is not available."
+
+On my system, the exact message seems looking for pub localhost
+
+#+BEGIN_EXAMPLE
+flutter pub get                             
+Running "flutter packages get" in flutter_charts_common...                                                                           
+Got socket error trying to find package collection at http://localhost:8080.                                                         
+pub get failed (69)                                                                          
+#+END_EXAMPLE
+
+Solution for now: 
+#+BEGIN_SRC sh
+cd /home/mzimmermann/dev/software/flutter/pub_server/
+./run-pub.sh
+#+END_SRC
+
+*there are 2 pub get issues here*
+
+- From idea, when it shows "Pubspec has been edited", clicking "Get dependencies"runs ~pub get~, and then shows error:
+  #+BEGIN_EXAMPLE
+  Working dir: /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
+  /home/mzimmermann/software/flutter/gitclone/flutter/bin/cache/dart-sdk/bin/pub get
+  Resolving dependencies...
+  The Flutter SDK is not available.
+  Depended on by:
+  - flutter_charts_common 
+  Process finished with exit code 69
+  #+END_EXAMPLE
+  The suggested solution is to go to command line and run ~flutter pub get~ But this gets a different error
+- From command line  ~flutter pub get~ But this gets a different error
+  #+BEGIN_EXAMPLE
+  flutter pub get                             
+  Running "flutter packages get" in flutter_charts_common...                                                                           
+  Got socket error trying to find package collection at http://localhost:8080.                                                         
+  pub get failed (69)                                                                            
+  #+END_EXAMPLE
+
+
+*the solution for both is to*
+1. =run pub server localhost=
+
+   #+BEGIN_SRC sh
+   cd /home/mzimmermann/dev/software/flutter/pub_server/
+   ./run-pub.sh
+   #+END_SRC
+
+2. Ensure ~pubspec.yaml~ contains
+
+   #+BEGIN_SRC yaml
+   dev_dependencies:
+     test:
+     flutter_test:
+       sdk: flutter
+   #+END_SRC
+
+3. run ~flutter pub get~
+
+   #+BEGIN_SRC sh
+   cd  /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
+   flutter pub get
+   #+END_SRC
+
+4. From *intellij*, synchronize to refresh the packages
+*** Flutter run
+
+- ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
+- ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
+** *Flutter publishing errors*
+*** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
+The reason was that during publishing, I used an incorrect pubspec in flutter_charts:
+
+*INCORRECT BELOW - DO NOT VERSION THIS*
+
+* Flutter dev, programming: Notes, Working source code examples
+** Flutter SDK etc
+
+*** Strong mode
+while on the types topic somewhat, does Flutter currently use (set/require) strong mode?
+
+Ian Hickson @Hixie 15:39
+we turn it on in the analyzer
+the dart vm doesn't yet have strong mode
+so we can't turn it on there
+switching to strong mode should have very little impact on flutter applications
+when we finally do so
+
+Milan Zimmermann @mzimmerm 15:39
+@Hixie Thanks!
+
+Ian Hickson @Hixie 15:40
+the only real difference i think people might see is that var will start meaning "set the type of this variable to the type of the expression on the right hand side" instead of meaning dynamic.
+
+Eric Seidel @eseidelGoogle 15:40
+Well, piping the types all the way down into the compiler backend I'm told may both reduce the size and speed up dart code execution in Flutter apps. But we'll see. 
+
+Ian Hickson @Hixie 15:40
+oh sure, we hope there will be good performance implications 
+i meant impact in terms of correctness, having to fix code, etc
+
+** Anatomy and Structure of a typical Flutter App with stateful Home Page
+
+#+BEGIN_SRC dart 
+
+void main() {                                          //  - Main is the Entry point of Flutter execution
+  runApp(new MyApp());                                 //    -  runApp is defined in packages/flutter/lib/src/widgets/binding.dart.
+}                                                      //       - here MyApp is created, it only represents "registration" 
+
+class MyApp extends StatelessWidget {                  // - MyApp is stateless
+
+  Widget build(BuildContext context) {                 //   - implements it's method build(context)
+    return new MaterialApp(                            //     - which must return new MaterialApp
+      title: ,                                         //       - title:
+      theme: ,                                         //       - theme:
+      home: new MyHomePage(title: ),                   //       - home: creates MyHomePage()[can be stateless or stateteful.
+                                                       //               stateless can be here inline, stateful must have build separate.
+    );                                                 //         - which is my portion of the app that is layed out to to body: (see 
+  }
+}
+
+class MyHomePage extends StatefulWidget {              //  - MyHomePage is stateful, typically
+
+  MyHomePage({Key key, this.title}) : super(key: key); //    - has a constructor
+
+  _MyHomePageState createState() =>                    //    - implements createState() (must if statefule)
+    new _MyHomePageState();                            //        - which creates new instance of the state of MyHomePage
+}
+
+// Core of the App
+
+class _MyHomePageState extends State<MyHomePage> {     //  - _MyHomePageState is private
+
+  void _stateChangingMethod() {                        //    - implements _stateChangingMethod - must call  setState( functionCalledOnStateChage )
+    setState(() { etc });                              //      -  _stateChangingMethod is called on user action - see _MyHomePageState.build -> floatingActionButton -> onPressed
+  }
+
+  Widget build(BuildContext context) {                 //     - implements the build() - guaranteed to be called on setState() 
+    return new Scaffold (                              //        - build creates a Scaffold Widget, NOT Layout yet 
+      appBar:
+      body: new SomeLayoutClass() { widgets created }  //          - body: THE APP IS CREATED HERE, EVERY TIME state changes, creates a Layout with all App's Widgets inside
+      
+      floatingActionButton: new FloatingActionButton(  //          - floatingActionButton: -> OnPressed: 
+        onPressed:  _stateChangingMethod,              //            - THE APP STATE IS CALLED HERE
+      ), 
+    );
+  }
+}
+#+END_SRC
+
+The actual Flutter App code flow goes like this (instrumented with Flutter registrations and calling various objects:
+
+- *runApp* -> 
+  - *new MyApp()*                   /object returned from runApp - MyApp - is registered with Flutter for calling MyApp.build/ -> 
+- Flutter calls *myApp.build()* -> 
+  - *new MaterialApp()* -> 
+    - *new MyHomePage()*            /object returned from myApp.build() - MyHomePage - is registered with Flutter for calling MyHomePage.createState()/ -> 
+- Flutter calls *MyHomePage.createState()* ->
+  - *new _MyHomePageState()*       /object returned from MyHomePage.createState() -  _MyHomePageState - is registed with Flutter for calling _MyHomePageState.build()/
+- Flutter calls *myHomePageState.build()* when ready for the App to show on screen
+  - *new Scaffold()* - lays out the App - *all App's UI new Widget() called here* 
+    - the laying out also creates the *new FloatingActionButton()*
+      - /the method onPressed -the _stateSettingMethod is registed with Flutter and called when user presses the FloatingActionButton/
+
+- the application is then ready for the user to perform some action
+  - if *user click on the FloatingActionButton*
+    - Flutter calls the *_MyHomePageState._stateChangingMethod()*
+      - which manipules application's state; change of state can cause change in App appearance, so the App has to be rebuild - in  *_MyHomePageState.build()*
+      - then calls setState()
+        - *Flutter guarantees to call _MyHomePageState.build() after State.setState() is called*
+    - 
+
+
+*There are 2 implementations of the build() method:*
+  - one is MyApp.build()                - which typically just creates new MyHomePage() 
+  -second is _MyHomePageState.build()  - which will actually (in body:) layout the whole application!
+
+*So Flutter is sort of a "dependency injection" (meh) design - The_ HomePageState.build() - not the MyApp.build() - is the place that builds the app (lays it out, creates widgets, etc)!. But that is good - the State class is at the core, and start of the App.*
+
+
+
+
+*** Stateless app is simpler: MyApp (StatelessWidget) -> has method build -> return new MaterialApp ( title: text, home: new Scaffold( appBar: , body: bodyWidget )
+
+1. main
+   - runApp(new MyApp)
+2. MyApp
+   - build 
+     - return new MaterialApp(
+       - title: /app title - does not show anywhere/
+       - home: 
+         - new Scaffold
+           - appBar: new AppBar
+             - title: *page title widget*,
+           - body: 
+             - *new BodyWidget, core of the app*
+
+*** Stateful app summary: 
+
+1) main
+   - runApp(new MyApp)
+2) MyApp       (StatelessWidget) -> has method build -> return new MaterialApp -> title: text, home: new MyHomePage *diff: stateless returns new Scaffold instead of MyHomePage and is done*
+3) MyHomePage  (StatefulWidget)  -> has method createState -> return MyHomePageState(State) -> has build -> return  new Scaffold ( 
+  appBar:, body: bodyWidget, floatingActionButton: new FloatingActionButton( floatingActionButton: ->  onPressed:  MyHomePageState._stateChangingMethod,
+4) FloatingActionButton or other widget, is needed, that provides  MyHomePageState.setState on user action 
+5) *Flutter guarantees to call MyHomePageState.build on calling MyHomePageState.setState*
+** *Code, Notes, Design, API, Layout*
+1. *Note: no PathEffect for dashed path* exists in Flutter
+
+2. *Note: sky_engine* - Lots of important classes are not in package flutter, but in sky_engine. What is it? sky_engine classes include:
+
+   - Scene
+
+   - SceneBuilder
+
+   - Picture
+
+3. [ ] *Note: ui.Color vs material.Colors*
+
+4. *Note: Why I cannot find  drawText method in Canvas class*? #1023 https://github.com/flutter/flutter/issues/1023
+   You should use *TextPainter* to draw text. Using TextPainter will let you take advantage of all the international text support in the engine (e.g., bidirectional text, text shaping, etc).
+
+5. [ ] *Note: CustomPaint/CustomPainter*
+
+   1. General: CustomPaint is the boss
+      - it owns its CustomPainters
+      - it calls all its CustomPainter.paint
+
+   2. Details - IMPORTANT
+     From the https://docs.flutter.io/flutter/rendering/CustomPainter/paint.html
+     
+     Called whenever the object needs to paint. The given Canvas has its coordinate space configured such that the origin is at the top left of the box. The *area of the (paintable Canvas) box is the size of the size argument*.
+     
+     *Paint operations should remain inside the given area*. Graphical operations outside the bounds may be silently ignored, clipped, or not clipped.
+     
+     Implementations should be wary of correctly pairing any calls to Canvas.save/Canvas.saveLayer and Canvas.restore, otherwise all subsequent painting on this canvas may be affected, with potentially hilarious but confusing results.
+     
+     From the https://docs.flutter.io/flutter/widgets/CustomPaint-class.html
+     
+     Painters are implemented by subclassing CustomPainter.
+     
+     Because custom paint calls its painters during paint, you cannot call setState or markNeedsLayout during the callback (the layout for this frame has already happened).
+     
+     /Custom painters normally size themselves to their child. *If they do not have a child, they attempt to size themselves to the size*, which defaults to Size.zero. size must not be null./
+     
+     Now: The result of the highlighted is that for the chart, we have to:
+     
+      1) *Give /explicit size/ to the CustomPainter (??? I think the Paint) - to have something to paint on.*
+     
+      2) *Ensure no paint operation (CustomPainter.paint, canvas.paint, TextPainter.paint(canvas) goes over the /size/ argument*
+
+6. *Note:Fix screen orientation to portrait* - android:screenOrientation="portrait" in AndroidManifest.xml and its worked!!!
+
+7. *Code: Flutter TextPainter on TextSpan - replaces Canvas.drawText(). Example code:*
+   - TextPainter paints TextSpan to Canvas, using this code:
+     #+BEGIN_SRC dart
+     var text = new TextSpan(text: "some text");
+     var textPainter =  new TextPainter(text: text, textAlign: , textScaleFactor: , maxLines:, ellipsis: );
+     textPainter.layout(minWidth:0.0, maxWidth:double.INFINITY);
+     textPainter.paint(canvas, offset);
+     #+END_SRC
+
+8. *Code: Minimal Flutter App: The Hello World - must import material.dart which exports runApp*
+
+  The minimal Flutter app simply calls the runApp function with a widget:
+
+   #+BEGIN_SRC dart
+   import 'package:flutter/material.dart';
+
+   void main() {
+   runApp(new Center(child: new Text('Hello, world!')));
+   }
+   #+END_SRC
+
+9. *Code: ScrollView use example* . Sample below does not actually work because CustomPaint is unlimited in vertical direction, but the scroll piece should be right.
+   #+BEGIN_SRC dart
+     new CustomScrollView(
+       scrollDirection: Axis.vertical,
+       slivers: <Widget>[
+         new SliverToBoxAdapter(
+           child:
+           new CustomPaint(
+             size:
+               new ui.Size(300.0, 300.0), // width, height. small width move the whole thing to the right. Why??.
+             painter:
+               new LineView(
+                 context: context,
+                 lineFragment: _lineFragment,
+               ),
+           ),
+         )
+         ],
+     ),
+   #+END_SRC
+
+10. *Code: Window object* is available *everywhere as ui.window* 
+
+  physical and logical size
+  
+  #+BEGIN_SRC dart
+  final double devicePixelRatio = ui.window.devicePixelRatio;
+  final ui.Size logicalSize = ui.window.physicalSize / devicePixelRatio;
+
+  print ("ui.window.physicalSize=${ui.window.physicalSize} and logicalSize=$logicalSize");
+  #+END_SRC
+  I/flutter ( 3452): ui.window.physicalSize=Size(768.0, 1184.0) and logicalSize=Size(384.0, 592.0)
+
+11. *Code: PackageInfo* - can query packages
+    #+BEGIN_SRC dart
+    var version = await PackageInfo.getVersion();
+    var buildNumber = await PackageInfo.getBuildNumber();
+    #+END_SRC
+
+12. *Layout: Fill up space, expand, etc*
+
+    - how can I get a child widget to fill it's parent?  Specifically how can I get a child in a stack to fill the stack?
+      - depending on context: 
+        - Positioned.fill (if you’re in a Stack) or 
+        - ConstrainedBox with a constraints of BoxConstraints.expanded() can also work well if want to force a widget to be larger than its intrinsic size
+        - SizedBox.expanded is worth looking at too
+
+13. *Design: General principles*
+    - A widget shouldn't visit it's children. It becomes messy. But you can access the state of your parents.
+
+    - *Navigator - like Router in Android* - allow to create, navigate and manage multi page app - see https://docs.flutter.io/flutter/widgets/Navigator-class.html
+
+    - Parent stateful. Child stateless (can access and use state in parent)
+
+    - An "Activity" equivalent in Android,  would just be a Root Widget in Flutter, and you navigate to it using routes
+
+    - Is there any life cycle to Flutter "Activities"? Do they get paused, stopped, destroyed?
+
+      - Widgets do not have lifecycle, but you can create a StatefulWidget with a corresponding State class. The State class has an initState and dispose methods
+14. *Design: Navigation, Navigator (router in Android)/PageView* Navigators are typically used for full-screen navigations. So you may not need that functionality for your example. *PageView* might have some of what you want?
+    - How should I navigate to my menu screen after logging in successfully
+
+      - push a new route to the Navigation from wherever you're calling this method from?
+
+15. *Design: State Management in Flutter, GlobalKey, etc* - state is never persisted on navigating away from page(??), so put state on parent which survives 
+    1) My current understanding of state management in flutter is that state is never persisted, so navigating away from a page will dispose the widgets, and lose the state. The solution being to hoist that state up to a parent that doesn't get destroyed [and then pass it in to this page's constructor] or persist the state to some storage solution and repopulate it. Is this right?
+       Ian Hickson @Hixie Aug 31 18:57
+       more or less
+       if you go to another page, the previous page isn't destroyed
+       (though it is "turned off" in that animations and such won't run in the background, and it won't be laid out or painted)
+       *but if you pop the page, it is destroyed* - what does is mean to pop the page, in practice?
+
+    2) Is there a *best practice for persisting state*? I see that there's a redux plugin *see below* which is tempting to use to avoid having a monolithic parent widget and passing down to every widget, is there a more "flutter" way of handling this?
+       Or is that what PageStorage should be used for?
+       Ian Hickson @Hixie Aug 31 19:22
+       there's a variety of techniques
+
+    3) Basically, I'm not sure how to do an Instagram style UX where each tab has state (lists, potential navigation stacks, etc), without doing a ton of manual state persistence in StateStorage.
+       suggestions
+       Pushing a new route/page will place that page in a separate part of the tree Which means the new page is not a descendant of the initial page. So the initial page is not in the new page's context. And we can't access the initial page's state using something like context.ancestorStateOfType()or static MainPageState of(BuildContext context)
+       but it seems that this is exactly what *GlobalKey* is for:
+       /Global keys provide access to other objects that are associated with elements, such as the a BuildContext and, for StatefulWidgets, a State./
+
+    4) Using Authorization - which needs to keep state
+      I like the WillPopScope widget for Auth
+      I wouldn't even use routes for this, rather just change what gets rendered in the main build method:
+      #+BEGIN_SRC 
+      app() {
+        build() {
+          bool loggedIn = ;
+          return loggedIn ? LoggedInPage : AuthIndicator;
+        }
+      }
+      #+END_SRC
+      But then you need to do that in all of your pages ? so should my auth widget be a parent widget to the whole app instead ? and i can then get the auth user data using .of or something like that in any page i need 
+      That's what I did. My *authController is above MaterialApp*
+
+    5) Ah, if you 're in a PageView then we're much more aggressive about disposing of the subtrees that aren't visible
+      It's more a list -  basically with any list (and a page view is just a list) we only keep the stuff that's on-screen, for efficiency
+      you can override that by using *class:AutomaticKeepAliveClientMixin* (see the docs for details, let me know if it's not clear enough)
+      old routes are kept alive, what @megamattron is seeing if I understand correctly is different pages in a PageView going away. PageView and routes have nothing to do with each other, in retrospect the naming may be unfortunate there.
+      Yes that's the problem I'm seeing @Hixie - let me try this AutomaticKeepAliveClientMixin and see if it does the trick
+       - the KeepAlive widgets are already there -  every list includes them  you just have to apply that mixin to something in your tree, and then set the needKeepAlive flag (or whatever it's called) to true when you want to be kept alive
+       - I've used the mixin with my state class like so: class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin and overridden wantKeepAlive: @override bool get wantKeepAlive { return true; }  - also added the part where I'm supposed to call super in the build method, that seems to have done the trick!
+
+16. *Design: Concept of Pages* 
+
+17. *Design: Gestures: GestureDetector, InkWell* 
+    1) the pinch gesture ? https://docs.flutter.io/flutter/widgets/GestureDetector-class.html,  GestureDetector has a onScale Then you can have something like Align, which have heightFactor and widthFactor
+
+18. *Design:* - to scale child content with parent  you should make the content size depend on the parent size. Then use Align/Aspect Ratio for this.
+
+19. *Design: Assets* -  things listed in pubspec.yaml under the assets section will get zipped up into the .flx file. things in the .flx file are accessible via the default AssetBundle https://docs.flutter.io/flutter/services/AssetBundle-class.html . Also read  files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
+20. *Design: Hero animation and their floating through an app* 
+    - Material Hero Image: Hero images are images that are usually anchored in a prominent position, above the fold, such as a banner at the top of the screen. They serve to draw in a user, provide context about the content, or reinforce the brand.  https://material.io/guidelines/style/imagery.html#imagery-ui-integration
+    - Flutter Hero (animation) - *do not confuse*  https://docs.flutter.io/flutter/widgets/Hero-class.html
+21. *Design: Data Binding and Flux/Redux*
+    - is there anything like Two-way (two way) data binding in flutter
+      - Don't do it! Flutter really wants the data flow to be one-way, So Flux, Rx and Redux should be you guide for how to structure your data.
+    - But what's the point of using Redux in Flutter ?
+      - To keep your Models and Views separated
+    - any particular redux like libraries in dart that you would recommend?
+      - Actually, yes.Many agreed that https://pub.dartlang.org/packages/redux is the one to go with if you're looking for a production redux library.
+      - *mz - what is Greencat??*
+    - With normal ol' Redux.dart (mentioned above) &flutter_redux, you can pretty much avoid setting up StatefulWidgets yourself, which I think can save a lot of boilerplate.  The idea is to create a function that converts your store to a viewModel, And a builder function that turns that ViewModel into a Widget. Then, whenever the state of your store changes, the Widget will get rebuilt automatically for ya. I think flutter_built_redux works in a similar way, but I haven't looked into it as much. These ideas all come from the original libraries. 
+
+    - flutter_built_redux assumes you want to use built_value for your state tree, which is a really nice way to express your immutable state.  You can also use a StreamBuilder widget connected to your store's state stream.
+
+    - Generally Redux is meant to have 1 store, but you don't have to put everything in there. Overall, I'd recommend you put stuff in the Store that you need to use more widely throughout your app, such as in different Widgets or on different Screens in your app. So, if you have a shopping cart, and want to keep it all synced and use it on several screens (to add items, remove items, checkout, etc) -- I'd keep that data in the Store. But if you've got an intro Widget that needs to control swiping through 4 screens, for example, that type of State could be kept at the Widget level and not in the Store.
+
+    - redux + flutter_redux or built_redux + flutter_built_redux both offer flutter integrations
+      - There's a bit more middleware + time travel dev tools for regular ol' Redux
+      - Whereas built_redux has a few more tools for combining state trees, but requires a build step for that
+    - I feel like one of things that is missing with base flutter is good DI, and I feel redux can someone help get around that
+      - *But Flutter solution is An inheritedWidget/stafulWidget above in the tree!?(mz)* No need to pass anything with methods available in the - Yep, that's where *InheritedWidget*s are nice
+22. *Design: Images*
+ There's also https://pub.dartlang.org/packages/open_iconic_flutter even though they don't have a proper facebook icon either.
+ @bjornbjorn it's also pretty easy to add new font-icons directly to your project:
+   # 1. go to https://icomoon.io/app/#/select (or somewhere else, I don't care, you just need a font + unicode code point)
+   # 2. select an icon
+   # 3. Generate a font (button at the bottom of the page)
+   # 4. Note the code point (e.g. 0xe9a9)
+   # Optional: Edit the font using fontforge and edit the name unter "Element > Font Info"
+   # To insert it into code
+   # 1. Register the font icon in your pubspec.yaml:
+    fonts:
+    - family:             icomoon
+      fonts:
+      - asset:          fonts/icomoon.ttf
+   # 2. Add an Icon using the proper codepoint & Fontname new IconData(0xe9a9, fontFamily: 'icomoon');
+23. *Design: Plugins* - what are plugins, really? Native calls to Android and swift/obj-c/iOS? But what is this:
+    - the firebase_database plugin would be one to look at. If i recall correctly, they are keeping 'handles' on both sides, or something like that
+    - Plugin video:  This tutorial should help you all the way through the process: https://www.youtube.com/watch?v=tErY3QWTZSA&t=805s
+24. *Code: JSON* - use Json to convert to Map
+    import 'dart:convert';
+    // then you can manipulate the JSON:
+    Map data = JSON.decode(localJson);
+25. *Code: Files* https://flutter.io/reading-writing-files/  but for files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
+
+** *Gallery of Widgets - see https://flutter.io/widgets/*
+
+1) *Layout related*
+
+   + *Container* - *Container is the equivalent of Box model in Web. It does not have any extensions. Use it to add /padding/ /margin/ /border/ to a widget, which will be passed as /child:/ widget* 
+
+     - *Flutter container (box) layout* - from outside, we have
+
+       - margin - use *Container margin: const EdgeInsets.only(top: 1.0)*
+
+       - border - use *Containger decoration: new BoxDecoration( border: new Border(bottom: new BorderSide(color: Colors.grey[400])))*
+
+       - padding - use *Container padding: const EdgeInsets.fromLTRB( 10.0, 6.0, 20.0, 3.0)*
+
+       - content - use the *content widget's constructor args* - e.g. todo which args?
+
+   + *BoxConstraints - describes the Box Layout Model in Flutter - see https://docs.flutter.io/flutter/rendering/BoxConstraints-class.html and also layout notes in  https://docs.flutter.io/flutter/widgets/Row-class.html*
+
+   + *RenderBox and interaction/touch on low level widgets*
+
+     I'm working on a custom thermostat dial. I'm drawing the lines on a canvas and now I want to handle someone dragging their finger around. Can someone point me to a tutorial on touch events for custom widgets/canvases?
+
+     Eric Seidel @eseidelGoogle 10:54
+     @chrislondon I doubt we have such a tutorial yet, the lower-level layers examples might help, there is at least one which deals with raw touch input: https://github.com/flutter/flutter/tree/master/examples/layers
+     e.g. https://github.com/flutter/flutter/blob/master/examples/layers/rendering/touch_input.dart which might be too low for your needs, but was the first thing I thought of
+
+   + *NestedScrollView* - use for scrollable cards
+
+   + *CustomPaint/CustomPainter vs Canvas* 
+
+     don't use the canvas as a widget directly, instead you want a CustomPaint widget, which you will pass a CustomPainter object to, which will then have a paint method which gets passed the Canvas object
+
+   + *ListView* - also *CustomScrollView - uses Slivers* also **
+
+     - *ListView* is the most commonly used scrolling widget. It displays its children one after another in the scroll direction. In the cross axis, the children are required to fill the ListView.
+  
+       #+BEGIN_SRC 
+       ListView.builder({
+         params
+       })
+       #+END_SRC
+       Creates a scrollable, linear array of widgets that are created on demand.
+  
+       This constructor is appropriate for list views with a large (or infinite) number of children because the builder is called only for those children that are actually visible.
+       #+BEGIN_SRC dart
+       new ListView(
+         shrinkWrap: true,
+         padding: const EdgeInsets.all(20.0),
+         children: <Widget>[
+           const Text('I\'m dedicating every day to you'),
+           const Text('Domestic life was never quite my style'),
+           const Text('When you smile, you knock me out, I fall apart'),
+           const Text('And I thought I was so smart'),
+         ],
+       )
+       #+END_SRC
+       Transitioning to CustomScrollView
+       A ListView is basically a CustomScrollView with a single SliverList in its CustomScrollView.slivers property.
+
+       If ListView is no longer sufficient, for example because the scroll view is to have both a list and a grid, or because the list is to be combined with a SliverAppBar, etc, it is straight-forward to port code from using ListView to using CustomScrollView directly.
+
+       - Is it possible to /autoscroll/ a ListView to show last inserted element ? - yes,  pass a scrollController to your listView and do _scrollController.animateTo
+
+     - *Sliver* - novel term from flutter. https://docs.flutter.io/flutter/widgets/SliverToBoxAdapter-class.html
+       - basically a sliver is the geometry primitive for scrolling (much like a box is the geometry primitive for most of the rest of layout)
+       - It's defined in the docs for *RenderSliver*: https://master-docs-flutter-io.firebaseapp.com/flutter/rendering/RenderSliver-class.html
+
+   + *Overlay* Overlay is just a wrapper around Stack which allows insertion/removal of children after the Stack widget is built?
+     Yes, exactly.
+     and to add one, you do Overlay.of(context).insert(...), see https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/OverlayState/insert.html
+     So  Overlay is basically just a stack whose children can be added and removed remotely
+
+   + *Expanded / Flexible*
+      To take up the whole height of the Drawer
+
+   + *Flow*???
+     Flow layouts are optimized for repositioning children using transformation matrices.
+
+   + *IntrinsicHeight*
+     A widget that sizes its child to the child's intrinsic height.
+
+     This class is useful, for example, when unlimited height is available and you would like a child that would otherwise attempt to expand infinitely to instead size itself to a more reasonable height.
+
+   + *FractionallySizedBox*
+    A widget that sizes its child to a fraction of the total available space. For more details about the layout algorithm, see RenderFractionallySizedOverflowBox.
+
+   + *ConstrainedBox*
+     A widget that imposes additional constraints on its child.
+
+     For example, if you wanted child to have a minimum height of 50.0 logical pixels, you could use const BoxConstraints(minHeight: 50.0) as the constraints.
+
+   + *AspectRatio* 
+     A widget that attempts to size the child to a specific aspect ratio.
+
+     The widget first tries the largest width permited by the layout constraints. The height of the widget is determined by applying the given aspect ratio to the width, expressed as a ratio of width to height.
+
+   + *ClipRect* 
+     A widget that clips its child using a rectangle.
+
+     By default, ClipRect prevents its child from painting outside its bounds, but the size and location of the clip rect can be customized using a custom clipper.
+
+     ClipRect is commonly used with these widgets, which commonly paint outside their bounds:
+
+     *CustomPaint*
+     CustomSingleChildLayout
+     CustomMultiChildLayout
+     Align and Center (e.g., if Align.widthFactor or Align.heightFactor is less than 1.0).
+     OverflowBox
+     SizedOverflowBox
+
+   + *Expanded(or Flexible) vs Column with GridView(or ListView) child* - /basically do not put List/GridView inside Column/
+
+     Animesh Jain @animeshjain 12:46
+     I was trying to work with grids. When I embed a grid view inside a Column, I get an error. For eg..
+     This works :
+         return new MaterialApp(
+           title: "Test",
+           home: new Scaffold(
+             body: new *Center* (
+               child: new *GridView*.count(
+                 crossAxisCount: 3,
+                 scrollDirection: Axis.vertical,
+                 children: <Widget>[
+                   new Text("Hello"),
+                   new Text("this"),
+                   new Text("is"),
+                   new Text("a"),
+                   new Text("grid"),
+                 ],
+               ),
+             ),
+           ),
+         );
+     This throws an error :
+         return new MaterialApp(
+           title: "Test",
+           home: new Scaffold(
+             body: new *Center* (
+               child: new *Column* (
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: <Widget>[
+                   new *Text* ("Row 1"),
+                   new *GridView*.count(
+                     crossAxisCount: 3,
+                     scrollDirection: Axis.vertical,
+                     children: <Widget>[
+                       new Text("Hello"),
+                       new Text("this"),
+                       new Text("is"),
+                       new Text("a"),
+                       new Text("grid"),
+                     ],
+                   )
+                 ],
+               ),
+    
+             ),
+           ),
+         );
+     ERROR :
+     Ian Hickson @Hixie 12:49
+     @animeshjain how tall do you want the GridView to be?
+     (btw if you read more of the error message i believe it tells you which widget has the unbounded constraints)
+    
+     Animesh Jain @animeshjain 12:51
+     But doesn't column widget have bounds. And the Gridview should then fit within that? Regarding how tall I want it to be - probably as large as the column widget allows in this instance?
+    
+     Ian Hickson @Hixie 12:52
+     *if you want the child of the column to be as tall as the column, then either just remove the column, or use an Expanded* widget
+    
+     Animesh Jain @animeshjain 12:52
+     Also, this is what is confusing me as well - This situation typically happens when a scrollable widget is nested inside another scrollable widget.
+     only the gridview seems to be a scrollable widget. which other widget could potentially allow unlimited space for expansion?
+    
+     Ian Hickson @Hixie 12:56
+     *the Column - by default the Column lets each child be as tall as it wants so it gives its children no constraints  (no vertical constraints)*
+    
+     Animesh Jain @animeshjain 12:56
+     OK. So the column can extend beyond the screen as well ?
+    
+     Ian Hickson @Hixie 12:56
+     *the column itself can't extend beyond the screen it'll be the size given to it by its parent*
+     but its non-expanded children are each allowed to be however tall they want to be
+     and then stacked
+     and the remaining room after doing that is given to the Expanded (or Flexible) children
+    
+     Animesh Jain @animeshjain 12:58
+     If there's no room remaining, then do the rest of the children get clipped?
+    
+     Ian Hickson @Hixie 13:01
+     if there's no room remaining that means you have a bug :grinning:
+     and should probably be using a ListView or some such
+    
+     Animesh Jain @animeshjain 13:01
+     Aah ok. So basically then I get to see this error.
+    
+     Ian Hickson @Hixie 13:01
+     *it won't throw an exception in that case (mz no room aafter the column, to the end what column is allowed by parent) it'll just /draw a red warning box/.*
+    
+     Ian Hickson @Hixie 13:02
+     *the exception is because of what the exception says -- you have a conflict in the constraints the column is telling the list view (or grid view, whatever) to be as tall as it wants and the list view is telling the column it wants to be as tall as the column can let it be* 
+
+   + *Row* /for chart layout/ - see layout talk in https://docs.flutter.io/flutter/widgets/Row-class.html 
+     Row expands by default, use mainAxisSize to limit it like this:
+     new Row(
+       mainAxisSize: MainAxisSize.min,
+       children: []
+ 
+2) [ ] *TextField vs Text vs RichText vs. TextSpan vs TextFormField* - document those
+
+   + *TextFormField* - Text-entry field. See  https://github.com/flutter/flutter/blob/master/examples/flutter_gallery/lib/demo/material/text_form_field_demo.dart on how to get user-entered text
+
+   + *TextField* - ??
+     You can listen to onChange events of your TextField and filter the list from that
+
+3) [ ] *Opacity*
+   This example shows some Text when the _visible member field is true, and hides it when it is false:
+
+   new Opacity(
+     opacity: _visible ? 1.0 : 0.0,
+     child: const Text('Now you see me, now you don\'t!'),
+   )
+   This is more efficient than adding and removing the child widget from the tree on demand.
+
+4) [ ] *Image and Icon - whats the diff??* - todo Examples of icon creation that work
+
+   1. *Icon from Image.asset - can be used for my images*  /this works/
+     #+BEGIN_SRC dart
+     Widget icon = new Image.asset(
+       'graphics/icons/top_rank.png',
+       width: 600.0,
+       height: 24.0,
+       fit: BoxFit.cover,
+       )
+     #+END_SRC
+  
+      - This assumes:
+        1. pubspec.yaml has the following line:
+          #+BEGIN_SRC yaml
+          assets:
+             - graphics/icons/top_rank.png
+
+          #+END_SRC
+
+      - top_rank.png is an image in project_root (level of pubspec.yaml)/graphics/icons
+
+   2. *Box from AssetImage* - /could not get to work/
+     #+BEGIN_SRC dart
+     new DecoratedBox(
+       decoration: new BoxDecoration(
+       image:      new DecorationImage(
+         image:      new AssetImage('graphics/icons/top_rank.png'),
+         ),
+       ),
+     ),
+     #+END_SRC      
+
+   3. *Icon from Flutter predefinced Icon(Date)* /this works/
+    
+     #+BEGIN_SRC dart
+       new Icon(iconData, color: color); // e.g. new Icon(material.Icons.arrow_upward, color: color); 
+      #+END_SRC
+
+   4. *Icon from JSON code blob*
+      #+BEGIN_SRC dart
+        // Grab the blob from JSON:
+       
+        var blob = yourJSONMapHere['yourJSONKeyHere'];
+       
+        var image = BASE64.decode(blob); // image is a Uint8List
+       
+        // Now, use image in a Image.memory
+       
+        new Container( child: new Image.memory(image));         
+      #+END_SRC
+
+5) *Text* - has *TextStyle* (which has: *Color*, *FontSize*, *FontWeight* (normal, bold, lerp), *FontStyle* (normal, italics)
+
+6) *StreamBuilder / FutureBuilder* - build in ability to register for a stream of events
+   Another nice Widget is the StreamBuilder as well -- you can simply pass it a Stream<Data> and a function to build your widget and it will handle all the Stream subscribing / Unsubscribing bizniss. Bonus: There's also a FutureBuilder that works very similarly for Future<Data> / one-off async operation
+
+7) *InkWell or GestureDetector* With either a GestureDetector or an Inkwell if you want the Ripple Effect
+
+   #+BEGIN_SRC groovy
+   body: new Center(
+     child: new InkWell(
+       child: new Text('Text pushes: $_counter'),
+       onTap: _incrementCounter,
+     ),
+   ),
+   #+END_SRC
+
+8) *Navigator - like Router in Android* - allow to create, navigate and manage multi page app - see https://docs.flutter.io/flutter/widgets/Navigator-class.html
+
+   1) INTRO
+     Hi! I'm new for flutter and android. I can't get something in flutter. Android app may have few activities (screens, pages), so we can run special activity from other application. But flutter's app looks for me as Single Page Application, with router and without activites. Do I miss something? Can Flutter has few activities in one project? How to define it?
+  
+     There's a router -  It's called *Navigator*
+     You can do things such as *Navigator.of(context).pushNamed("/mypage")*
+  
+     How can other application call special route in flutter app? -   https://flutter.io/faq/#can-i-use-flutter-inside-of-my-existing-native-app
+     But no doc yet
+     flutter/flutter#8945
+     there is some examples in the the flutter repo
+  
+     Navigators are typically used for full-screen navigations. So you may not need that functionality for your example. PageView might have some of what you want?
+  
+     How do I pass and get data value between routes ?  well if you want to do it manually/statically, you can do like I did in a previous app:  https://github.com/Pacane/catalogue-mouches/blob/a6a16096cf4a99af3e04e402b5163468a591c82b/lib/main.dart#L43 https://github.com/Pacane/catalogue-mouches/blob/a6a16096cf4a99af3e04e402b5163468a591c82b/lib/src/components/fly_selector_item.dart#L16  but, you could also use a more elaborate router https://github.com/goposse/fluro . Ror example, my app displays flies. And so each fly has its own page. I use the fly names as the route names. Once you get that, you can push the route name quite easily And to load whatever you need in the "fly page", I just fetch the fly information from the name (here the fly name is the ID), so I can get that out from a repository class either fetching from a database or from an in memory implementation
+
+   2) EXAMPLE 1
+      - Navigation, pass data : 
+      - my main problem is I have been trying to pass/push data from Navigator.of(context).pop() eg: you navigate from "A" to "B" then you make selection in "B" list of options then I bring you back to "A" with the value of the selection you made on "B" - How do I implement something like that
+      - Easy, you can do in B: *Navigator.of(context).pop(myValue)* ! It allows to do things like :
+      - in A: 
+        - var result = await showDialog<MyClass>( return future = Navigator.push(); )
+      - okay great , so how do I get myValue from Navigator.of(context).pop(myValue)? thats why I got stuck for a while now
+      - *Navigator.push* returns a future - that future is what you use to get your myValue
+   3) EXAMPLE 2 create route programmatically
+      #+BEGIN_SRC java
+         
+        class PostPageRoute extends MaterialPageRoute<Post> {
+            final Post post;
+
+            PostPageRoute(
+                          {this.post,
+                                  WidgetBuilder builder,
+                                  RouteSettings settings: const RouteSettings()})
+                : assert(post != null),
+                super(builder: builder, settings: settings);
+
+            @override
+            Post get currentResult => post;
+
+            static PostPageRoute of(BuildContext context, Post post) => new PostPageRoute(
+               post: post,
+               builder: (BuildContext context) {
+                   return new PostPage(
+                    post: post,
+                    );
+               });
+        }
+        // then just call to in the ontap of the listitem to navigate to the page.
+
+        Navigator.push(context, PostPageRoute.of(context, post));
+      #+END_SRC
+  
+9) *PageView* - sort of like *Navigator* 
+
+   - *TabBarView* is alternative to PageView, has tabs 
+
+10) *GestureDetector* - detect gestures inside CustomPaint
+
+    https://stackoverflow.com/questions/45764981/flutter-gesturedetector-is-not-detecting-in-animation
+
+    GestureDetector will only work on a widget. it was necessary to put in the child property of CustomPaint a widget such as a Container.
+    googleguy:  CustomPaint is a widget, but if you want it to be hit-testable (e.g. so a GestureDetector on its outside will work) you need to implement CustomPainter.hitTest to return true on your custom painter delegate
+
+    #+BEGIN_SRC dart
+     return new Scaffold(
+          body: new Stack(
+              children: <Widget>[
+                new Positioned(
+                    bottom: 0.0,
+                    child: new GestureDetector(
+                      onTap: _up,
+                      child: new AnimatedBuilder(
+                        animation: _animation,
+                        builder: (BuildContext context, Widget child) {
+                        return new Container(
+                          height: _height,
+                          child: new CustomPaint(
+                            painter: new Sky(_width, _height * _animation.value),
+                            child: new Container(
+                              height: _isRotated ? 0.0 : _height * _animation.value,
+                              width: _isRotated ? 0.0 : _width,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                ),
+    // etc
+    #+END_SRC
+
+11) *InheritedWidget* - Base class for widgets that efficiently propagate information down the tree. I guess this can be used to propagate /globals/, /enums/, /const/ etc
+
+    To obtain the nearest instance (*mz up the tree???*) of a particular type of inherited widget from a build context, use ~BuildContext.inheritFromWidgetOfExactType~
+
+    /Inherited widgets, when referenced in this way, will cause the consumer to rebuild *mz call build()*  when the inherited widget itself changes state./
+
+    https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html
+
+    mz - there is some discussion that *InheritedWidget*  - inheritedWidget/stafulWidget above in the tree - removes any need for flux/redux in Flutter, see below
+
+    The fact that it's not a global state, but just 'the closest parent' also allows to easily isolate a behaviour for testing
+
+    As long as you're isolating the business logic out of your Widgets it's a win for testing 
+
+    That's also one of the reason I prefer Flutter over React
+
+12) *AssetBundleImageProvider. Such as ExactAssetImage*  - get stream from asset like image
+  
+  If you want to access the image loading layer, you shouldn't use Image Widget.
+  Image widget is just an helper to make image accessing easier.
+  But you can do it by using an AssetBundleImageProvider. Such as ExactAssetImage.
+  Something like :
+            final asset = new ExactAssetImage(assetPath);
+            final stream = asset.resolve(createLocalImageConfiguration(context));
+  If you don't want to use Exact AssetImage, you'll have to dig in the Image widget code to look for how they do it.
+
+13) *AssetBundle* - assets etc - things listed in pubspec.yaml under the assets section will get zipped up into the .flx file. things in the .flx file are accessible via the default AssetBundle https://docs.flutter.io/flutter/services/AssetBundle-class.html Also read  files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
+14) *AnimatedContainer* - Good example of animation; see also Gitter talks.
+
+15) **
+
+16) *Text*
+
+17) *Text*
+
+18) *Text*
+
+** Testing in flutter - see https://flutter.io/testing/ 
+
+*** *Working cleanup and setup for flutter pub and flutter test from command line*
+- deleted  ~/.pub-cache
+- ensured /etc/bash.bashrc.local has this commented out: ~export PUB_HOSTED_URL=http://localhost:8080~
+- cd flutter project to be tested
+- rm .pubspec.lock
+- flutter pub get
+- flutter test
+- *works!!*
+
+*** Run Test From Idea (not working yet - Run - "Run tests in flutter_charts_common" fails
+
+#+BEGIN_EXAMPLE
+/home/mzimmermann/software/flutter/gitclone/flutter/bin/cache/dart-sdk/bin/dart --enable-vm-service:42585 /home/mzimmermann/software/flutter/gitclone/flutter/bin/cache/dart-sdk/bin/snapshots/pub.dart.snapshot run test -r json /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
+Testing started at 9:58 PM ...
+Observatory listening on http://127.0.0.1:42585/
+
+Flutter is not available. If this is a Flutter project, make sure to always run
+pub through the "flutter" executable.
+
+Process finished with exit code 1
+#+END_EXAMPLE
+
+*** Run Test From Command line 
+
+**** ~pub get~ - The dart way - fails :
+
+cd ~/dev/my-projects-source/public-on-github/flutter_charts_common
+pub get
+Resolving dependencies... 
+Package flutter_charts_common depends on flutter from unknown source "sdk".
+
+**** *so run tests the flutter way*
+
+See https://flutter.io/testing/
+
+1. Any testing in Flutter, even if it tests non flutter stuff, needs to have:
+
+  #+BEGIN_SRC yaml
+  dev_dependencies:
+    flutter_test:
+      sdk: flutter
+  #+END_SRC
+  
+2. In addition, this is a sample code
+  
+  #+BEGIN_SRC dart
+  import 'package:test/test.dart';
+  
+  void main() {
+    test('my first unit test', () {
+      var answer = 42;
+      expect(answer, 42);
+    });
+  }
+  #+END_SRC
+
+*Then run* ~flutter test~ 
+
+BUT THIS STILL FAILS - *but see /Working setup ../ which resolves it*
+
+* TODO *todos - immediate, and questions to resolve*
+
+** *Immediate todos*
+
+*** maybe add a blog entry about "Only static members can be accessed in initializers"
+
+This code
+
+~String formattedLabels = labelInfos.map((labelInfo) => labelInfo.formattedLabel).toList();~ 
+
+inside class causes the message.
+
+Solutions:
+- convert to getter
+- move to constructor
+
+** Packages
+
+*** Ask question: Different name of package in lib/my_package.dart and in pubspec.yaml -> name: my_package *can it differ? what does it do?*
+
+/// In `pubspec.yaml`, the presence of the following line
+///         `name: flutter_charts`. This line gives the library
+///         it's name on pub.
+///         todo 0: what if we make name: different from lib/flutter_charts.dart
+
+
+* TODO Workflow: Create, debug, publish, test a flutter library package
+
