@@ -60,6 +60,71 @@ https://github.com/flutter/flutter/issues/11094
 
 Fixed by selecting, in emulator, software emulation - later installed Nvidia driver instead of nouveau.
 
+* TODO Flutter and Dart upgrade - Nutshell
+
+For Flutter upgrade documentation, see see https://flutter.io/upgrading/ . A few notes from this site:
+
+- We strongly recommend tracking the =beta= branch in the flutter repository.
+- All updates commands from commant like must be done in one of:
+
+  - directory where my_package is located (e.g. flutter_charts)
+  - or globally, e.g. where Flutter is installed on the system, ~/.pub etc (todo ??)
+
+Flutter upgrade everything in a nutshell
+
+- From command line
+  - cd my_package # e.g. flutter_charts
+  - flutter channel beta 
+  - flutter upgrade
+  - flutter packages pub get
+
+- From IntelliJ
+  - (not sure how to switch channel)
+  - Tools -> Flutter -> Flutter upgrade
+
+Upgrade details:
+
+  ~cd my_projects~
+
+  ~flutter channel beta~ # set to beta
+
+  # "flutter upgrade" upgrades (git pulls) both flutter SDK in /home/mzimmermann/software/flutter/gitclone/flutter, and the included Dart SDK. How does this know the path to git pull to? Because flutter command MUST be on PATH , in my case /home/mzimmermann/software/flutter/gitclone/flutter/bin/flutter - this runs and figures out it's directory.
+
+  ~flutter upgrade~     
+  
+  # if you run flutter upgrade and if there are newer versions of packages than the ones your constraints allow, they should be marked in the output, you then need to manually fix the constraint
+
+- Pub dependent packages for any package (project) - *pub package dependecy upgrade is different for Dart and Flutter*:
+
+  - ~cd my_project~ # specific Flutter or Dart project
+  
+  - Dart project upgrade mdependency packages
+    - ~pub upgrade~ (ignores lockfile, and gets latest packages, then overwrites lockfile) = upgrade dependencies
+
+  - Flutter project upgrading project dependency packages
+   
+    If you’ve modified your pubspec.yaml file, or you want to *only update the packages your app depends upon instead of both the packages and Flutter itself*, then use the following commands:
+    
+    ~flutter packages get~ to get all the dependencies listed in the pubspec.yaml file, or
+    ~flutter packages upgrade~ to get the latest versions of all the dependencies listed in the pubspec.yaml file
+
+Some specific files and workflow related to pub
+
+*/.pub-cache* - local storage of plugins, that are ever needed by all projects (for which ~pub upgrade~ was run)
+
+*my_project/.packages* - this file is created every time after pubspec.lock is created. Contains same package list. Just pointers from package name to ~/pub-cache
+
+*pub workflow*:
+~pub get/ upgrade / downgrade~: There is always a step once .lockfile is written, the .packages is also written
+- pub get     - If lockfile does not exist, creates it. Then ensures files listed in lockfile exist in  ~/pub-cache.
+- pub upgrade - recalculates the current directory's package dependencies from pubspec.yaml, and the lates possible versions are downloaded to ~/pub-cache. then writen to  the lockfile (overrides existing .lockfile)
+Note: everything in .packages links to ~/pub-cache, except:
+flutter:file:///home/mzimmermann/software/flutter/gitclone/flutter/packages/flutter/lib/ 
+flutter_test:file:///home/mzimmermann/software/flutter/gitclone/flutter/packages/flutter_test/lib/ 
+
+
+
+
 * TODOs - FAQ, Flutter community questions and extracted solutions
 
 - [X] Visible/Invisible/Opaque in Flutter: (https://stackoverflow.com/questions/44489804/show-hide-widgets-on-flutter-programmatically) (that is Android)
@@ -87,109 +152,6 @@ Fixed by selecting, in emulator, software emulation - later installed Nvidia dri
 ** Initially, the window size is 0 in this code - see https://github.com/flutter/flutter/issues/11697
 
 ** ~flutter package get~ picks up lines commented out in pubspec.yaml?
-* Investigate Data as JSON - an example
-
-#+BEGIN_SRC javascript
-$(function () {
-$.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=range.json&callback=?', function(data) {
-
-$('#container').highcharts({
-
-chart: {
-type: 'arearange'
-},
-
-title: {
-text: 'Temperature variation by day'
-},
-
-xAxis: {
-type: 'datetime'
-},
-
-yAxis: {
-title: {
-text: null
-}
-},
-
-tooltip: {
-crosshairs: true,
-shared: true,
-valueSuffix: '°C'
-},
-
-legend: {
-enabled: false
-},
-
-series: [{
-name: 'Temperatures',
-data: JSON,
-color: '#FF0000',
-negativeColor: '#0088FF'
-}]
-
-});
-});
-
-});
-
-var JSON = [
-{ name: 'Pay Off',
-data: [ [2850,0], 
-[3135,0], 
-[3420,0], 
-[3705,0], 
-[3990,0], 
-[4275,0], 
-[4560,0], 
-[4845,0], 
-[5130,0], 
-[5415,0], 
-[5700,0], 
-[5985,285],
-[6270,570], 
-[6555,855], 
-[6840,1140],
-[7125,1425],
-[7410,1710],
-[7695,1995],
-[7980,2280],
-[8265,2565],
-[8550,2850]
-]
-},
-{
-name: 'Profit',
-data: [ [2850,-250],    
-[3135,-250],
-[3420,-250],
-[3705,-250],
-[3990,-250],
-[4275,-250],
-[4560,-250],
-[4845,-250],
-[5130,-250],
-[5415,-250],
-[5700,-250],
-[5985,35],
-[6270,320],
-[6555,605],
-[6840,890],
-[7125,1175],
-[7410,1460],
-[7695,1745],
-[7980,2030],
-[8265,2315],
-[8550,2600]
-]
-}
-];
-
-
-#+END_SRC
-
 * Android to Flutter 
 
 
@@ -212,14 +174,24 @@ The following table shows how Dart values are received on the platform side and 
 | Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
 | List                       | java.util.ArrayList  | NSArray                                        |
 | Map                        | java.util.HashMap    | NSDictionary                                   |
-* Flutter admin, upgrades, packages, pub etc - ~flutter action~ commands. /action/ = channel, upgrade, package etc. 
+* Flutter admin, upgrades, packages, pub etc - ~flutter action~ commands. /action/ = *channel*, *upgrade*, *package* etc. 
 ** *pub*, *flutter package*, *flutter pub* , *flutter create project* commands. 
-*** src_sh{flutter build clean # clean build}
-*** ~flutter create --template=package my_package~                    - create a Flutter project to be used as a library package. See https://flutter.io/developing-packages/
-*** ~flutter create myapp~                                            - *what is the difference here?*
-*** ~flutter create --org com.example --template=plugin my_package~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
-*** ~cd my_package; flutter packages pub publish --dry-run~           - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.io/developing-packages/
-*** ~cd my_package; flutter pub get~                                  - get the latest version of dependencies packages, as defined in my_package/pubspec.yaml to ~/.pub_cache. Writes out pubspec.lock and .packages . See https://flutter.io/using-packages/ . *How is it different from ~flutter packages pub get~  which also works?*
+*** ~flutter create --template=package my_project~                    - create a Flutter project that can be used as a library package publishable on *pub* https://pub.dartlang.org/. See https://flutter.io/developing-packages/
+*** ~flutter create my_app~                                           - *what is the difference from the above?*
+*** ~flutter create --org com.example --template=plugin my_project~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
+*** ~cd my_project; flutter build clean~                              - clean build
+*** ~cd my_project; flutter packages pub publish --dry-run~           - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.io/developing-packages/
+*** ~cd my_project; flutter packages pub get~                         - get the latest version of dependencies packages, as defined in my_project/pubspec.lock to ~/.pub_cache. Writes out .packages . See https://flutter.io/using-packages/ . Same as ~flutter packages get~  - see https://github.com/flutter/flutter/issues/10403
+*** ~cd my_project; flutter packages pub upgrade~                     - *Like pub get, pub upgrade gets dependencies*. The difference is that pub upgrade ignores any existing lockfile, so that pub can get the latest versions of all dependencies. When pub upgrade upgrades dependency versions, it writes a *new* pubspec.lock to ensure that next ~pub get~ will use the same versions of those dependencies.get the latest version of dependencies packages to ~/.pub_cache, as defined in my_project/pubspec.lock. Also writes out .packages .
+*** ~flutter run~                                                     - Runs the package lib/src/main.dart if present
+
+- ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
+- ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
+** *Flutter errors*
+*** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
+The reason was that during publishing, I used an incorrect pubspec in flutter_charts:
+
+*INCORRECT BELOW - DO NOT VERSION THIS*
 *** Error getting packages: flutter pub get "Resolving dependencies: The Flutter SDK is not available."
 
 When a project has flutter: sdk: flutter in its pubspec.yaml, pub get fails with exit code 69, and message "Resolving dependencies... The Flutter SDK is not available."
@@ -286,19 +258,9 @@ cd /home/mzimmermann/dev/software/flutter/pub_server/
    #+END_SRC
 
 4. From *intellij*, synchronize to refresh the packages
-*** Flutter run
-
-- ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
-- ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
-** *Flutter publishing errors*
-*** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
-The reason was that during publishing, I used an incorrect pubspec in flutter_charts:
-
-*INCORRECT BELOW - DO NOT VERSION THIS*
 
 * Flutter dev, programming: Notes, Working source code examples
 ** Flutter SDK etc
-
 *** Strong mode
 while on the types topic somewhat, does Flutter currently use (set/require) strong mode?
 
@@ -1068,7 +1030,7 @@ The actual Flutter App code flow goes like this (instrumented with Flutter regis
 13) *AssetBundle* - assets etc - things listed in pubspec.yaml under the assets section will get zipped up into the .flx file. things in the .flx file are accessible via the default AssetBundle https://docs.flutter.io/flutter/services/AssetBundle-class.html Also read  files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
 14) *AnimatedContainer* - Good example of animation; see also Gitter talks.
 
-15) **
+15) *RotatedBox* - new widgets.RotatedBox(quarterTurns:  3, child: text,)
 
 16) *Text*
 
@@ -1156,12 +1118,12 @@ Solutions:
 
 ** Packages
 
-*** Ask question: Different name of package in lib/my_package.dart and in pubspec.yaml -> name: my_package *can it differ? what does it do?*
+*** Ask question: Different name of package in lib/my_project.dart and in pubspec.yaml -> name: my_project *can it differ? what does it do?*
 
 /// In `pubspec.yaml`, the presence of the following line
 ///         `name: flutter_charts`. This line gives the library
 ///         it's name on pub.
-///         todo 0: what if we make name: different from lib/flutter_charts.dart
+///         todo 0: what if we make the above pubspec ~name: flutter_charts~ different from ~filename lib/flutter_charts.dart~?
 
 
 * TODO Workflow: Create, debug, publish, test a flutter library package

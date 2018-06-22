@@ -22,7 +22,7 @@ class HomePage extends material.StatefulWidget {
 class HomePageState extends material.State<HomePage> {
 
   static widgets.TextPainter textPainterForLabel(String string) {
-    var text =
+    painting.TextSpan text =
     new painting
         .TextSpan(
         text: string,
@@ -30,7 +30,7 @@ class HomePageState extends material.State<HomePage> {
         new painting.TextStyle(
             color: material.Colors.black,
             fontSize: 14.0));
-    var textPainter =
+    painting.TextPainter textPainter =
     new painting.TextPainter(
         text: text,
         textDirection: ui.TextDirection.ltr, // Note: rtl, same result
@@ -44,7 +44,7 @@ class HomePageState extends material.State<HomePage> {
     return textPainter;
   }
 
-  painting.TextPainter textPainter = textPainterForLabel("Some Text");
+  painting.TextPainter textPainter = textPainterForLabel("Some Long Text Appears");
 
   @override
   material.Widget build(material.BuildContext context) {
@@ -57,7 +57,7 @@ class HomePageState extends material.State<HomePage> {
                   right: 0.0,
                   top: 0.0,
                   child: new material.CustomPaint(
-                    painter: new Sky(textPainter),
+                    painter: new SkyCustomPainter(textPainter),
                   )
               ),
             ]
@@ -66,11 +66,11 @@ class HomePageState extends material.State<HomePage> {
   }
 }
 
-class Sky extends material.CustomPainter {
+class SkyCustomPainter extends material.CustomPainter {
 
   painting.TextPainter textPainter;
 
-  Sky(painting.TextPainter textPainter) {
+  SkyCustomPainter(painting.TextPainter textPainter) {
     this.textPainter = textPainter;
   }
 
@@ -100,7 +100,7 @@ class Sky extends material.CustomPainter {
   }
 
   @override
-  bool shouldRepaint(Sky oldDelegate) {
+  bool shouldRepaint(SkyCustomPainter oldDelegate) {
     return false;
   }
 }
