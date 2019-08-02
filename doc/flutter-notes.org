@@ -1,5 +1,8 @@
 #+TODO: TODO IN-PROGRESS LATER DONE
 
+Flutter Notes
+
+* See also Dart notes:  [[file:~/dev/my-projects-source/public-on-github/dart-experiments/doc/dart-notes.org]]
 * Flutter Installation
 
 ** Installation - followed steps in https://flutter.io/setup-linux/ https://flutter.io/setup-windows/ https://flutter.io/setup-macos/
@@ -60,29 +63,46 @@ https://github.com/flutter/flutter/issues/11094
 
 Fixed by selecting, in emulator, software emulation - later installed Nvidia driver instead of nouveau.
 
-* TODO Flutter and Dart upgrade - Nutshell
+
+
+* Where is Flutter and Dart on my system?
+
+- *Flutter directory is the first found on PATH which contains the "flutter" executable* - for me, ~/home/mzimmermann/software/flutter/gitclone/flutter/bin~
+
+- InIDEA, this is defined in Settings -> Languages and Frameworks -> Flutter -> Flutter SDK Path
+
+- All flutter commands, e.g. ~flutter upgrade~ places the upgrade there
+
+- Flutter's Dart is then in ~/home/mzimmermann/software/flutter/gitclone/flutter/bin/cache/dart-sdk~
+
+- Dart standalone location is defined by ~DART_HOME=/home/mzimmermann/software/dart/dart-sdk~
+
+* Flutter and Dart upgrade and packages upgrade
+
+** Nutshell: Flutter and Dart upgrade and packages upgrade
 
 For Flutter upgrade documentation, see see https://flutter.io/upgrading/ . A few notes from this site:
 
 - We strongly recommend tracking the =beta= branch in the flutter repository.
-- All updates commands from commant like must be done in one of:
+- All upgrades commands from commant like must be done in one of:
 
   - directory where my_package is located (e.g. flutter_charts)
-  - or globally, e.g. where Flutter is installed on the system, ~/.pub etc (todo ??)
+  - or globally, e.g. where Flutter is installed on the system, ~/.pub etc (todo ????? *does global upgrade exist?*)
 
-Flutter upgrade everything in a nutshell
+*Flutter upgrade everything in a nutshell*
 
-- From command line
+- From the command line
   - cd my_package # e.g. flutter_charts
   - flutter channel beta 
-  - flutter upgrade
-  - flutter packages pub get
+  - flutter upgrade           # Upgrades both Flutter and Dart inside Flutter
+  - flutter packages get      # flutter packages pub get - may do the same for consistency with Dart  
+  - flutter packages upgrade
 
 - From IntelliJ
   - (not sure how to switch channel)
   - Tools -> Flutter -> Flutter upgrade
 
-Upgrade details:
+*Upgrade detail steps and notes*
 
   ~cd my_projects~
 
@@ -98,101 +118,65 @@ Upgrade details:
 
   - ~cd my_project~ # specific Flutter or Dart project
   
-  - Dart project upgrade mdependency packages
-    - ~pub upgrade~ (ignores lockfile, and gets latest packages, then overwrites lockfile) = upgrade dependencies
+  -  ~pub upgrade~  Dart project upgrade dependency packages
+    - ignores lockfile, and gets latest packages, then overwrites lockfile) = upgrade dependencies
 
-  - Flutter project upgrading project dependency packages
+  - ~flutter upgrade~ - Flutter project upgrade  both the packages and Flutter SDK itself
    
-    If you’ve modified your pubspec.yaml file, or you want to *only update the packages your app depends upon instead of both the packages and Flutter itself*, then use the following commands:
+    If you’ve modified your pubspec.yaml file, or you want to *only upgrade the packages your app depends upon instead of both the packages and Flutter SDK itself*, then use the following commands:
     
-    ~flutter packages get~ to get all the dependencies listed in the pubspec.yaml file, or
-    ~flutter packages upgrade~ to get the latest versions of all the dependencies listed in the pubspec.yaml file
+    ~flutter packages [pub] get~ to get all the dependencies listed in the pubspec.yaml file, or
+    ~flutter packages [pub] upgrade~ to get the latest versions of all the dependencies listed in the pubspec.yaml file
 
-Some specific files and workflow related to pub
+    in both cases, the dependencies are packages that end up in ~/.pub-cache, in a source form, with a standard package structure from the pub server.
+    
+    in the above [pub] is optional
+
+    #+BEGIN_SRC bash
+
+    ls -l ~/.pub-cache
+    echo 
+    ls -l ~/.pub-cache/hosted/pub.dartlang.org
+
+    #+END_SRC
+
+*Some specific files and workflow related to pub*
 
 */.pub-cache* - local storage of plugins, that are ever needed by all projects (for which ~pub upgrade~ was run)
 
 *my_project/.packages* - this file is created every time after pubspec.lock is created. Contains same package list. Just pointers from package name to ~/pub-cache
 
 *pub workflow*:
-~pub get/ upgrade / downgrade~: There is always a step once .lockfile is written, the .packages is also written
-- pub get     - If lockfile does not exist, creates it. Then ensures files listed in lockfile exist in  ~/pub-cache.
-- pub upgrade - recalculates the current directory's package dependencies from pubspec.yaml, and the lates possible versions are downloaded to ~/pub-cache. then writen to  the lockfile (overrides existing .lockfile)
-Note: everything in .packages links to ~/pub-cache, except:
+
+~pub get/upgrade/downgrade~: There is always a step once .lockfile is written, the .packages is also written
+- ~pub get~     - If lockfile does not exist, creates it. Then ensures files listed in lockfile exist in  ~/pub-cache.
+- ~pub upgrade~ - recalculates the current directory's package dependencies from pubspec.yaml, and the latest possible versions are downloaded to ~/pub-cache. Then writen to the lockfile (overrides existing .lockfile)
+
+Note: everything in the ~.packages~ file links to ~/pub-cache, except:
 flutter:file:///home/mzimmermann/software/flutter/gitclone/flutter/packages/flutter/lib/ 
 flutter_test:file:///home/mzimmermann/software/flutter/gitclone/flutter/packages/flutter_test/lib/ 
-
-
-
-
-* TODOs - FAQ, Flutter community questions and extracted solutions
-
-- [X] Visible/Invisible/Opaque in Flutter: (https://stackoverflow.com/questions/44489804/show-hide-widgets-on-flutter-programmatically) (that is Android)
-- [X] I have a question regarding sizing of a CustomPaint widget. Or rather, regarding existence of a layout widget, that would give a CustomPaint a size that is as large as possible, given there are other widgets around the CustomPaint. 
-
-  To make this hopefully more concrete (trying my best but not sure this is explained well): I am experimenting writing a charting widget. It is an extension of CustomPaint, and it has no children, everything is painted using a CustomPainter on canvas. 
-  
-  For a charting widget, when participating in a layout, ideally we would want to give it a size as big as possible, but no bigger; this size would have to be calculated and provided by a (parent) layout widget. Let me talk about width only but similar thouight applies to height. For example, a chart may be placed in a row between two texts, simplified:  `Row(Text('>>>'),  chart, Text('<<<'))`. It is now enough to define for example:
-  ```dart
-  new Chart( // extends CustomPaint
-    size: new Size(300.0, 600.0),
-    painter: new ChartPainter(  // extends CustomPainter
-    ),
-  ),
-  ```
-  Because the fixed size limits the chart size. Instead of the fixed size, I'd like to wrap the Chart into a layout that provides the maximum size to the chart (after calculating the sizes needed to the Texts in the above example) - so when calling the `ChartPainter.paint(canvas, size)`, the calculated size would be passed - one that is "as large as possible but no larger" given the other widgets participating in the layout. I went over probably all the Layout widgets, and tried a few but cannot really find one that would provide the above behavior. Would someone have any suggestions? (I was thinking SO but this is probably to vague still). Appreciate any hints or suggestions, thanks.
-  *Answer: Use Expanded!!!*
-  *For some detail follow ups, see https://stackoverflow.com/questions/45875334/how-to-achieve-expansion-of-a-widget-in-both-vertical-height-and-horizontal-w .*
-- [ ] *You generally don't set properties with Flutter's functional/reactive APIs*. Instead, wrap your expansion panel list in a custom StatefulWidget. See https://flutter.io/tutorials/interactive/ for an introduction. /What does this mean to "set properties*/
-- [ ]  *but if you pop the page, it is destroyed* - /what does is mean to pop the page, in practice?/
-
-
-* TODO Flutter Bugs
-
-** Initially, the window size is 0 in this code - see https://github.com/flutter/flutter/issues/11697
-
-** ~flutter package get~ picks up lines commented out in pubspec.yaml?
-* Android to Flutter 
-
-
-** Type mapping Flutter to Android and iOS
-
-The following table shows how Dart values are received on the platform side and vice versa:
-  
-| Dart                       | Android              | iOS                                            |
-|----------------------------+----------------------+------------------------------------------------|
-| null                       | null                 | nil (NSNull when nested)                       |
-| bool                       | java.lang.Boolean    | NSNumber numberWithBool:                       |
-| int                        | java.lang.Integer    | NSNumber numberWithInt:                        |
-| int, if 32 bits not enough | java.lang.Long       | NSNumber numberWithLong:                       |
-| int, if 64 bits not enough | java.math.BigInteger | FlutterStandardBigInteger                      |
-| double                     | java.lang.Double     | NSNumber numberWithDouble:                     |
-| String                     | java.lang.String     | NSString                                       |
-| Uint8List                  | byte[]               | FlutterStandardTypedData typedDataWithBytes:   |
-| Int32List                  | int[]                | FlutterStandardTypedData typedDataWithInt32:   |
-| Int64List                  | long[]               | FlutterStandardTypedData typedDataWithInt64:   |
-| Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
-| List                       | java.util.ArrayList  | NSArray                                        |
-| Map                        | java.util.HashMap    | NSDictionary                                   |
-* Flutter admin, upgrades, packages, pub etc - ~flutter action~ commands. /action/ = *channel*, *upgrade*, *package* etc. 
-** *pub*, *flutter package*, *flutter pub* , *flutter create project* commands. 
-*** ~flutter create --template=package my_project~                    - create a Flutter project that can be used as a library package publishable on *pub* https://pub.dartlang.org/. See https://flutter.io/developing-packages/
-*** ~flutter create my_app~                                           - *what is the difference from the above?*
-*** ~flutter create --org com.example --template=plugin my_project~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
-*** ~cd my_project; flutter build clean~                              - clean build
-*** ~cd my_project; flutter packages pub publish --dry-run~           - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.io/developing-packages/
-*** ~cd my_project; flutter packages pub get~                         - get the latest version of dependencies packages, as defined in my_project/pubspec.lock to ~/.pub_cache. Writes out .packages . See https://flutter.io/using-packages/ . Same as ~flutter packages get~  - see https://github.com/flutter/flutter/issues/10403
-*** ~cd my_project; flutter packages pub upgrade~                     - *Like pub get, pub upgrade gets dependencies*. The difference is that pub upgrade ignores any existing lockfile, so that pub can get the latest versions of all dependencies. When pub upgrade upgrades dependency versions, it writes a *new* pubspec.lock to ensure that next ~pub get~ will use the same versions of those dependencies.get the latest version of dependencies packages to ~/.pub_cache, as defined in my_project/pubspec.lock. Also writes out .packages .
-*** ~flutter run~                                                     - Runs the package lib/src/main.dart if present
+** Detail:   Flutter admin, upgrades, packages, pub etc - ~flutter action~ commands. /action/ = *channel*, *upgrade*, *package* etc. 
+*** *pub*, *flutter package*, *flutter pub* , *flutter create project* commands. 
+**** All commands below assume we are in existing project: 
+~cd my_project~
+Except flutter create
+**** ~flutter create --template=package my_project~                    - create a Flutter project that can be used as a library package publishable on *pub* https://pub.dartlang.org/. See https://flutter.io/developing-packages/
+**** ~flutter create my_app~                                           - *what is the difference from the above?*
+**** ~flutter create --org com.example --template=plugin my_project~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
+**** ~flutter build clean~                              - clean build
+**** ~flutter packages pub publish --dry-run~           - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.io/developing-packages/
+**** ~flutter packages pub get~                         - get the latest version of dependencies packages, as defined in my_project/pubspec.lock to ~$HOME/.pub_cache~. Writes out the project's ~my_project/.packages~ file, which contains all the project's used packages links to ~$HOME/.pub-cache~ - one line from .packages: ~analyzer:file:///home/mzimmermann/.pub-cache/hosted/pub.dartlang.org/analyzer-0.31.2-alpha.2/lib/~. See https://flutter.io/using-packages/ . Same as ~flutter packages get~  - see https://github.com/flutter/flutter/issues/10403
+**** ~flutter packages pub upgrade~                     - *Same as /pub get/, /pub upgrade/ gets dependencies*. The difference is that /pub upgrade/ ignores any existing lockfile, so that pub can get the latest versions of all dependencies. When pub upgrade upgrades dependency versions, it writes a *new* pubspec.lock to ensure that next ~pub get~ will use the same versions of those dependencies.get the latest version of dependencies packages to $HOME/.pub_cache, as defined in my_project/pubspec.lock. Also writes out .packages .
+**** ~flutter run~                                                     - Runs the package lib/src/main.dart if present
 
 - ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
 - ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
-** *Flutter errors*
-*** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
+*** *Flutter errors*
+**** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
 The reason was that during publishing, I used an incorrect pubspec in flutter_charts:
 
 *INCORRECT BELOW - DO NOT VERSION THIS*
-*** Error getting packages: flutter pub get "Resolving dependencies: The Flutter SDK is not available."
+**** Error getting packages: flutter pub get "Resolving dependencies: The Flutter SDK is not available."
 
 When a project has flutter: sdk: flutter in its pubspec.yaml, pub get fails with exit code 69, and message "Resolving dependencies... The Flutter SDK is not available."
 
@@ -258,6 +242,155 @@ cd /home/mzimmermann/dev/software/flutter/pub_server/
    #+END_SRC
 
 4. From *intellij*, synchronize to refresh the packages
+* Package dependencies - any - resolving dependencies the right way, e.g. flutter_charts
+
+- First make the package Dart 2.0 compatible: Read https://www.dartlang.org/dart-2#migrating-packages
+
+  - The core here is to notice and understand the "environment:" in pubspec.yaml
+
+- Read Resolving dependencies the right way - read https://medium.com/flutter-community/quick-tip-resolving-dart-package-version-conflicts-faster-than-ever-582d097f655d
+
+- Make sure pubspec.yaml contains: 
+
+  environment:
+    # Works in Dart 2 only.
+    sdk: '>=2.0.0 <3.0.0'
+
+  *this was the cause of my trouble*
+
+- ~flutter upgrade~
+
+- Starting with this pubspec.yaml
+
+#+BEGIN_SRC yaml
+name: flutter_charts
+version: 0.1.8
+description: Charts Library for Flutter, written in Dart with Flutter.
+author: Milan Zimmermann <milan.zimmermann@gmail.com>
+homepage: https://github.com/mzimmerm/flutter_charts/
+publish_to: https://pub.dartlang.org
+documentation: https://pub.dartlang.org/packages/flutter_charts/doc
+
+dependencies:
+  flutter:
+    sdk:  flutter
+  decimal: ">=0.1.4 <0.2.0"
+  vector_math: ^2.0.0
+
+dev_dependencies:
+  test:
+  flutter_test:
+    sdk:  flutter
+
+environment:
+  sdk: ">=1.19.0 <3.0.0"
+
+flutter:
+  uses-material-design: true
+#+END_SRC
+
+- change all dependencies to "any" like this:
+
+#+BEGIN_SRC yaml
+name: flutter_charts
+version: 0.1.8
+description: Charts Library for Flutter, written in Dart with Flutter.
+author: Milan Zimmermann <milan.zimmermann@gmail.com>
+homepage: https://github.com/mzimmerm/flutter_charts/
+publish_to: https://pub.dartlang.org
+documentation: https://pub.dartlang.org/packages/flutter_charts/doc
+
+dependencies:
+  flutter:
+    sdk:  flutter
+  decimal: any
+  vector_math: any
+
+dev_dependencies:
+  test:
+  flutter_test:
+    sdk:  flutter
+
+environment:
+  # Declare it works in Dart 2 only.
+  sdk: '>=2.0.0 <3.0.0'
+
+flutter:
+  uses-material-design: true
+
+#+END_SRC
+
+- run ~flutter packages pub get~ # The pub seems needed, otherwise error
+
+- Our only dependency is the *decimal package* and the *vector_math package* .
+- Look in ~.packages~ for version:
+  decimal:file:///home/mzimmermann/.pub-cache/hosted/pub.dartlang.org/decimal-0.3.2/lib/
+  vector_math:file:///home/mzimmermann/.pub-cache/hosted/pub.dartlang.org/vector_math-2.0.8/lib/
+- Look in ~pubspec.lock~
+  vector_math:
+    dependency: transitive
+    description:
+    name: vector_math
+    url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.6" 
+
+- *For some reason, DECIMAL IS NOT IN PUBSPECK.LOCK. WHY??*
+
+- ~pubspec.yaml~, change the dependencies to the above versions:
+  decimal: ^0.3.2
+  vector_math: ^2.0.8
+- Just to make sure,ensure both exist on https://pub.dartlang.org/packages/vector_math / decimal
+- run ~flutter packages pub get~ # ONCE MORE, MAKE SURE NO ERROR 
+
+* TODOs - FAQ, Flutter community questions and extracted solutions
+
+- [X] Visible/Invisible/Opaque in Flutter: (https://stackoverflow.com/questions/44489804/show-hide-widgets-on-flutter-programmatically) (that is Android)
+- [X] I have a question regarding sizing of a CustomPaint widget. Or rather, regarding existence of a layout widget, that would give a CustomPaint a size that is as large as possible, given there are other widgets around the CustomPaint. 
+
+  To make this hopefully more concrete (trying my best but not sure this is explained well): I am experimenting writing a charting widget. It is an extension of CustomPaint, and it has no children, everything is painted using a CustomPainter on canvas. 
+  
+  For a charting widget, when participating in a layout, ideally we would want to give it a size as big as possible, but no bigger; this size would have to be calculated and provided by a (parent) layout widget. Let me talk about width only but similar thouight applies to height. For example, a chart may be placed in a row between two texts, simplified:  `Row(Text('>>>'),  chart, Text('<<<'))`. It is now enough to define for example:
+  ```dart
+  new Chart( // extends CustomPaint
+    size: new Size(300.0, 600.0),
+    painter: new ChartPainter(  // extends CustomPainter
+    ),
+  ),
+  ```
+  Because the fixed size limits the chart size. Instead of the fixed size, I'd like to wrap the Chart into a layout that provides the maximum size to the chart (after calculating the sizes needed to the Texts in the above example) - so when calling the `ChartPainter.paint(canvas, size)`, the calculated size would be passed - one that is "as large as possible but no larger" given the other widgets participating in the layout. I went over probably all the Layout widgets, and tried a few but cannot really find one that would provide the above behavior. Would someone have any suggestions? (I was thinking SO but this is probably to vague still). Appreciate any hints or suggestions, thanks.
+  *Answer: Use Expanded!!!*
+  *For some detail follow ups, see https://stackoverflow.com/questions/45875334/how-to-achieve-expansion-of-a-widget-in-both-vertical-height-and-horizontal-w .*
+- [ ] *You generally don't set properties with Flutter's functional/reactive APIs*. Instead, wrap your expansion panel list in a custom StatefulWidget. See https://flutter.io/tutorials/interactive/ for an introduction. /What does this mean to "set properties*/
+- [ ]  *but if you pop the page, it is destroyed* - /what does is mean to pop the page, in practice?/
+
+* TODO Flutter Bugs
+
+** Initially, the window size is 0 in this code - see https://github.com/flutter/flutter/issues/11697
+
+** ~flutter package get~ picks up lines commented out in pubspec.yaml?
+* Android to Flutter 
+
+
+** Type mapping Flutter to Android and iOS
+
+The following table shows how Dart values are received on the platform side and vice versa:
+  
+| Dart                       | Android              | iOS                                            |
+|----------------------------+----------------------+------------------------------------------------|
+| null                       | null                 | nil (NSNull when nested)                       |
+| bool                       | java.lang.Boolean    | NSNumber numberWithBool:                       |
+| int                        | java.lang.Integer    | NSNumber numberWithInt:                        |
+| int, if 32 bits not enough | java.lang.Long       | NSNumber numberWithLong:                       |
+| int, if 64 bits not enough | java.math.BigInteger | FlutterStandardBigInteger                      |
+| double                     | java.lang.Double     | NSNumber numberWithDouble:                     |
+| String                     | java.lang.String     | NSString                                       |
+| Uint8List                  | byte[]               | FlutterStandardTypedData typedDataWithBytes:   |
+| Int32List                  | int[]                | FlutterStandardTypedData typedDataWithInt32:   |
+| Int64List                  | long[]               | FlutterStandardTypedData typedDataWithInt64:   |
+| Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
+| List                       | java.util.ArrayList  | NSArray                                        |
+| Map                        | java.util.HashMap    | NSDictionary                                   |
 
 * Flutter dev, programming: Notes, Working source code examples
 ** Flutter SDK etc
@@ -1125,6 +1258,7 @@ Solutions:
 ///         it's name on pub.
 ///         todo 0: what if we make the above pubspec ~name: flutter_charts~ different from ~filename lib/flutter_charts.dart~?
 
+* TODO Workflow: Create, debug, publish, test a flutter library package such as flutter_charts
 
-* TODO Workflow: Create, debug, publish, test a flutter library package
+
 
