@@ -4,7 +4,107 @@ Flutter Notes
 
 * See also Dart notes:  [[file:~/dev/my-projects-source/public-on-github/dart-experiments/doc/dart-notes.org]]
 
-* Flutter Environment Full Installation - see  https://flutter.dev/docs/get-started/install/linux but I am making simplifications - NO Android Studio, ONLY Android sdk-tools
+
+* ON TOP: Anatomy and Structure of a typical (stateless) Flutter App with stateful Home Page
+
+#+BEGIN_SRC dart 
+
+void main() {                                          //  - Main is the Entry point of Flutter execution
+  runApp(new MyApp());                                 //    -  runApp is defined in packages/flutter/lib/src/widgets/binding.dart.
+}                                                      //       - here MyApp is created, it only represents "registration" 
+
+class MyApp extends StatelessWidget {                  // - MyApp is stateless
+
+  Widget build(BuildContext context) {                 //   - implements it's method build(context)
+    return new MaterialApp(                            //     - which must return new MaterialApp
+      title: ,                                         //       - title:
+      theme: ,                                         //       - theme:
+      home: new MyHomePage(title: ),                   //       - home: creates MyHomePage()[can be stateless or stateteful.
+                                                       //               stateless can be here inline, stateful must have build separate.
+    );                                                 //         - which is my portion of the app that is layed out to to body: (see ??)
+  }
+}
+
+class MyHomePage extends StatefulWidget {              //  - MyHomePage is StatefulWidget. StatefulWidget is a) immutable const b) has *NO build() method* 
+                                                       //       c) Stores it's state in the state class returned by createState() d) it's *build() method is delegated to the State object* 
+  MyHomePage({Key key, this.title}) : super(key: key); //       e) 
+
+  _MyHomePageState createState() =>                    //    - implements createState() (must if stateful)
+    new _MyHomePageState();                            //        - which creates new instance of the state of MyHomePage
+}
+
+// Core of the App
+
+class _MyHomePageState extends State<MyHomePage> {     //  - Building MyHomePage is delegated to this class MyHomePageState, or rather, it's build method
+  int _counter = 0;
+
+  void _stateChangingMethod() {                        //    - implements _stateChangingMethod - must call  setState( functionCalledOnStateChage )
+    setState(() { _counter++ });                       //      - The _stateChangingMethod is called on user action - see _MyHomePageState.build -> floatingActionButton -> onPressed
+  }                                                    //      - setState is a method on State class. *The framework guarantees, after State.setState is called,
+                                                       //         then State.build is called, rebuilding the MyHomePage Widget.*
+  Widget build(BuildContext context) {                 //     - implements the State.build() - guaranteed to be called after State.setState(() {}) 
+    return new Scaffold (                              //        - build creates a Scaffold Widget, NOT Layout yet 
+      appBar: new AppBar(title: fromWidget
+      body: new SomeLayoutClass() { widgets created }  //          - body: THE CORE of the APP IS CREATED HERE, as build is called over and over again.
+                                                       //                  EVERY TIME state changes, the State.build() is called, re
+      floatingActionButton: new FloatingActionButton(  //          - floatingActionButton: -> OnPressed: 
+        onPressed:  _stateChangingMethod,              //            - THE APP STATE IS SET HERE
+      ), 
+    );
+  }
+}
+#+END_SRC
+
+**  Stateful app summary
+
+The actual Flutter App code flow goes like this (instrumented with Flutter registrations and calling various objects):
+
+- *runApp* -> 
+  - *new MyApp()*                   /object returned from runApp - MyApp - is registered with Flutter for calling MyApp.build/ -> 
+- Flutter calls *myApp.build()* -> 
+  - *new MaterialApp()* -> 
+    - *new MyHomePage()*            /object returned from myApp.build() - MyHomePage - is registered with Flutter for calling MyHomePage.createState()/ -> 
+- Flutter calls *MyHomePage.createState()* ->
+  - *new _MyHomePageState()*       /object returned from MyHomePage.createState() -  _MyHomePageState - is registed with Flutter for calling _MyHomePageState.build()/
+- Flutter calls *myHomePageState.build()* when ready for the App to show on screen
+  - *new Scaffold()* - lays out the App - *all App's UI new Widget() called here* 
+    - the laying out also creates the *new FloatingActionButton()*
+      - /the method onPressed -the _stateSettingMethod is registed with Flutter and called when user presses the FloatingActionButton/
+
+- the application is then ready for the user to perform some action
+  - if *user click on the FloatingActionButton*
+    - Flutter calls the *_MyHomePageState._stateChangingMethod()*
+      - which manipules application's state; change of state can cause change in App appearance, so the App has to be rebuild - in  *_MyHomePageState.build()*
+      - then calls setState()
+        - *Flutter guarantees to call _MyHomePageState.build() after State.setState() is called*
+    - 
+
+
+*There are 2 implementations of the build() method in a typical Stateful homepage:*
+  - first  is MyApp.build()               - which typically just creates new MyHomePage() 
+  - second is _MyHomePageState.build()  - which will actually (in body:) layout the whole application!
+
+*So Flutter is sort of a "dependency injection" (meh) design - The_ HomePageState.build() - not the MyApp.build() - is the place that builds the app (lays it out, creates widgets, etc)!. But that is good - the State class is at the core, and start of the App. Also, the  _MyHomePageState.build()  -> (registers User Action) -> onPressed -> setState ->  _MyHomePageState.build() is a sort of a loop/circular behaviour!*
+
+
+** TODO Stateless homepage is simpler: MyApp (StatelessWidget) -> has method build -> return new MaterialApp ( title: text, home: new Scaffold( appBar: , body: bodyWidget )
+
+This does not seem well described! 
+
+1. main
+   - runApp(new MyApp)
+2. MyApp extends StatelessWidget
+   - build 
+     - return new MaterialApp(
+       - title: /app title - does not show anywhere/
+       - home: 
+         - new Scaffold
+           - appBar: new AppBar
+             - title: *page title widget*,
+           - body: 
+             - *new BodyWidget, core of the app*
+
+* Flutter Environment Full Installation using IntelliJ- see  https://flutter.dev/docs/get-started/install/linux but I am making simplifications - NO Android Studio, ONLY Android sdk-tools
 
 This installation gets all Flutter tools work with:
 
@@ -589,111 +689,7 @@ The following table shows how Dart values are received on the platform side and 
 | Map                        | java.util.HashMap    | NSDictionary                                   |
 
 * Flutter dev, programming: Notes, Working source code examples
-** Anatomy and Structure of a typical Flutter App with stateful Home Page
 
-#+BEGIN_SRC dart 
-
-void main() {                                          //  - Main is the Entry point of Flutter execution
-  runApp(new MyApp());                                 //    -  runApp is defined in packages/flutter/lib/src/widgets/binding.dart.
-}                                                      //       - here MyApp is created, it only represents "registration" 
-
-class MyApp extends StatelessWidget {                  // - MyApp is stateless
-
-  Widget build(BuildContext context) {                 //   - implements it's method build(context)
-    return new MaterialApp(                            //     - which must return new MaterialApp
-      title: ,                                         //       - title:
-      theme: ,                                         //       - theme:
-      home: new MyHomePage(title: ),                   //       - home: creates MyHomePage()[can be stateless or stateteful.
-                                                       //               stateless can be here inline, stateful must have build separate.
-    );                                                 //         - which is my portion of the app that is layed out to to body: (see 
-  }
-}
-
-class MyHomePage extends StatefulWidget {              //  - MyHomePage is stateful, typically
-
-  MyHomePage({Key key, this.title}) : super(key: key); //    - has a constructor
-
-  _MyHomePageState createState() =>                    //    - implements createState() (must if statefule)
-    new _MyHomePageState();                            //        - which creates new instance of the state of MyHomePage
-}
-
-// Core of the App
-
-class _MyHomePageState extends State<MyHomePage> {     //  - _MyHomePageState is private
-
-  void _stateChangingMethod() {                        //    - implements _stateChangingMethod - must call  setState( functionCalledOnStateChage )
-    setState(() { etc });                              //      -  _stateChangingMethod is called on user action - see _MyHomePageState.build -> floatingActionButton -> onPressed
-  }
-
-  Widget build(BuildContext context) {                 //     - implements the build() - guaranteed to be called on setState() 
-    return new Scaffold (                              //        - build creates a Scaffold Widget, NOT Layout yet 
-      appBar:
-      body: new SomeLayoutClass() { widgets created }  //          - body: THE APP IS CREATED HERE, EVERY TIME state changes, creates a Layout with all App's Widgets inside
-      
-      floatingActionButton: new FloatingActionButton(  //          - floatingActionButton: -> OnPressed: 
-        onPressed:  _stateChangingMethod,              //            - THE APP STATE IS CALLED HERE
-      ), 
-    );
-  }
-}
-#+END_SRC
-
-The actual Flutter App code flow goes like this (instrumented with Flutter registrations and calling various objects:
-
-- *runApp* -> 
-  - *new MyApp()*                   /object returned from runApp - MyApp - is registered with Flutter for calling MyApp.build/ -> 
-- Flutter calls *myApp.build()* -> 
-  - *new MaterialApp()* -> 
-    - *new MyHomePage()*            /object returned from myApp.build() - MyHomePage - is registered with Flutter for calling MyHomePage.createState()/ -> 
-- Flutter calls *MyHomePage.createState()* ->
-  - *new _MyHomePageState()*       /object returned from MyHomePage.createState() -  _MyHomePageState - is registed with Flutter for calling _MyHomePageState.build()/
-- Flutter calls *myHomePageState.build()* when ready for the App to show on screen
-  - *new Scaffold()* - lays out the App - *all App's UI new Widget() called here* 
-    - the laying out also creates the *new FloatingActionButton()*
-      - /the method onPressed -the _stateSettingMethod is registed with Flutter and called when user presses the FloatingActionButton/
-
-- the application is then ready for the user to perform some action
-  - if *user click on the FloatingActionButton*
-    - Flutter calls the *_MyHomePageState._stateChangingMethod()*
-      - which manipules application's state; change of state can cause change in App appearance, so the App has to be rebuild - in  *_MyHomePageState.build()*
-      - then calls setState()
-        - *Flutter guarantees to call _MyHomePageState.build() after State.setState() is called*
-    - 
-
-
-*There are 2 implementations of the build() method:*
-  - one is MyApp.build()                - which typically just creates new MyHomePage() 
-  -second is _MyHomePageState.build()  - which will actually (in body:) layout the whole application!
-
-*So Flutter is sort of a "dependency injection" (meh) design - The_ HomePageState.build() - not the MyApp.build() - is the place that builds the app (lays it out, creates widgets, etc)!. But that is good - the State class is at the core, and start of the App.*
-
-
-
-
-*** Stateless app is simpler: MyApp (StatelessWidget) -> has method build -> return new MaterialApp ( title: text, home: new Scaffold( appBar: , body: bodyWidget )
-
-1. main
-   - runApp(new MyApp)
-2. MyApp
-   - build 
-     - return new MaterialApp(
-       - title: /app title - does not show anywhere/
-       - home: 
-         - new Scaffold
-           - appBar: new AppBar
-             - title: *page title widget*,
-           - body: 
-             - *new BodyWidget, core of the app*
-
-*** Stateful app summary: 
-
-1) main
-   - runApp(new MyApp)
-2) MyApp       (StatelessWidget) -> has method build -> return new MaterialApp -> title: text, home: new MyHomePage *diff: stateless returns new Scaffold instead of MyHomePage and is done*
-3) MyHomePage  (StatefulWidget)  -> has method createState -> return MyHomePageState(State) -> has build -> return  new Scaffold ( 
-  appBar:, body: bodyWidget, floatingActionButton: new FloatingActionButton( floatingActionButton: ->  onPressed:  MyHomePageState._stateChangingMethod,
-4) FloatingActionButton or other widget, is needed, that provides  MyHomePageState.setState on user action 
-5) *Flutter guarantees to call MyHomePageState.build on calling MyHomePageState.setState*
 ** *Code, Notes, Design, API, Layout*
 1. *Note: no PathEffect for dashed path* exists in Flutter
 
@@ -983,6 +979,25 @@ The actual Flutter App code flow goes like this (instrumented with Flutter regis
        If ListView is no longer sufficient, for example because the scroll view is to have both a list and a grid, or because the list is to be combined with a SliverAppBar, etc, it is straight-forward to port code from using ListView to using CustomScrollView directly.
 
        - Is it possible to /autoscroll/ a ListView to show last inserted element ? - yes,  pass a scrollController to your listView and do _scrollController.animateTo
+
+       - ListView can NOT be nested inside a Flex such as Column (otherwise errors or yellow/black stripes, or err "exception was thrown: RenderBox was not laid out"). 
+         - If we need to nest ListView, it MUST be a Container with height(?anything else?) (mz but this is not useful, must know the height up front!)
+         - Better: Wrap ListView with Expanded
+           #+BEGIN_SRC dart
+             Column(
+               children: <Widget>[
+                 Expanded(
+                   child: ListView(...),
+                 )
+               ],
+             )
+           #+END_SRC
+         - *BUT BE CAREFUL, THIS IS A MESS*
+           - This works       : Column( children: [widget1, widget2, Expanded(child: ListView)])
+           - Does *NOT* work  : Column( children: [Column( children: [widget1, widget2, Expanded(child: ListView)])]) // wrapped inside into another column
+           - This works again : Column( children: [Expanded( child: Column( children: [widget1, widget2, Expanded(child: ListView)]))]) // wrapped inside into another column
+           - So basically, it looks like any time there is a Widget that *contains ListView as it's immediate or deeper child*, and we want to wrap such widget in a Column (or any Flex_, it has to be done as follows: ~Column(children:[Expanded(child: theWidgetWithListView)])~. This process must repeat if we nest this new  another wrap!
+         - see https://stackoverflow.com/questions/45669202/how-to-add-a-listview-to-a-column-in-flutter?rq=1 
 
      - *Sliver* - novel term from flutter. https://docs.flutter.io/flutter/widgets/SliverToBoxAdapter-class.html
        - basically a sliver is the geometry primitive for scrolling (much like a box is the geometry primitive for most of the rest of layout)
@@ -1432,5 +1447,71 @@ Solutions:
 
 * TODO Workflow: Create, debug, publish, test a flutter library package such as flutter_charts
 
+* Share / move Flutter and IntelliJ development environments between systems (e.g. laptop <-> server)
+
+** Source system - run this from an empty directory
+
+cd to HOME DiR (/home/mzimmermann) 
+
+dotAndroid=.android 
+dotIntellij=.IntelliJIdea2019.2
+androidSdk=software/android/sdk-tools-without-studio/
+ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
+
+for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
+dir=$(dirname $pathFile)
+file=$(basename $pathFile)
+
+echo dir=$dir file=$file
+
+if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
+
+if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
+
+echo "Compressing $pathFile"
+
+tar -cvzf ${file}.tar.gz ${dir}
+
+done
+
+
+** Copy files over to target system 
+
+** Target system
+
+cd to HOME DiR (/home/mzimmermann) 
+
+dotAndroid=.android 
+dotIntellij=.IntelliJIdea2019.2
+androidSdk=software/android/sdk-tools-without-studio/
+ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
+
+for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
+dir=$(dirname $pathFile)
+file=$(basename $pathFile)
+
+echo dir=$dir file=$file
+
+if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
+
+# if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
+
+# Remove existing directory before replacing.
+echo "Renaming existing $pathFile"
+
+if [ -e ${pathFile} ]; then 
+mv ${pathFile} ${pathFile}-del
+fi
+
+# Untar the file from the source system.
+tar -cvzf ${file}.tar.gz # has full path to $dir 
+
+done
+
+TEST
+
+** laptop checkout latest of all projects
+
+** laptop refresh software/flutter 
 
 
