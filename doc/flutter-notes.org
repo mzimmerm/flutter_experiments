@@ -1515,3 +1515,21 @@ TEST
 ** laptop refresh software/flutter 
 
 
+* Flutter Development issues and solutions
+
+** Memory error during build : Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
+
+adb: failed to install /home/mzimmermann/airlift/airlift-projects/shift2bid/boardrunner_app/build/app/outputs/apk/app.apk: Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
+Error launching application on Android SDK built for x86 64.
+
+Solution:
+
+Flutter IntelliJ: After getting an memory error on build: I edited the emulator, and replaced it's currently used x86_64 image with a Google Recommended x86 image. Alaso, apparently, using x86_64 is NOT compatile with Google Play Store!! 
+
+What did I do exactly? 
+- Edited the Pixel emulator
+- In the "Android API 29 x86_64" element, clicked "Change"
+  - Selected the Google Recommended Target
+
+    | Release Name    | API | ABB | Target                   |
+    | API 29 Download |  29 | x86 | Androiid API 29 (Google) |
