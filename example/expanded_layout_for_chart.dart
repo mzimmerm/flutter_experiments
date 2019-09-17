@@ -26,7 +26,7 @@ void main() {
             new Expanded(
               child: new Row(
                 // The crossAxisAlignment is needed to give content height > 0
-                //   - we are in a Row, so crossAxis is Column, so this enforces
+                //   - we are in a Row, so crossAxis is vertical, so this enforces
                 //     to "stretch height".
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
