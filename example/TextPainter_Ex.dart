@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' as material
-    show runApp, MaterialApp, StatefulWidget, HomePage, Colors, Color,
-         State, HomePageState, Widget, Scaffold, Stack, Canvas,
+    show runApp, MaterialApp, StatefulWidget, Colors, Color,
+         State, Widget, Scaffold, Stack, Canvas,
         Positioned, BuildContext, CustomPaint, CustomPainter, Paint;
 
 import 'package:flutter/widgets.dart' as widgets;

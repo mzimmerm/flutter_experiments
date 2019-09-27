@@ -53,7 +53,7 @@ class LineChartPainter extends CustomPainter {
   /// Paint the biggest circle that fits to [size]
   void paint(ui.Canvas canvas, ui.Size size) {
 
-     print(" ### Size: paint(): passed size = ${size}");
+     print(" ### Size: paint(): passed size = $size");
 
      var radius = [size.height, size.width].reduce(math.min) / 2;
      ui.Offset middle = size.center(Offset.zero); //new ui.Offset(dx, dy)

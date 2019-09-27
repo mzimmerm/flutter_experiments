@@ -5,11 +5,8 @@ import 'package:flutter/material.dart' as material
         runApp,
         MaterialApp,
         StatefulWidget,
-        HomePage,
-        Colors,
         Color,
         State,
-        HomePageState,
         Widget,
         Scaffold,
         Stack,
@@ -23,8 +20,8 @@ import 'package:flutter/material.dart' as material
 import 'package:flutter/widgets.dart' as widgets;
 
 import 'package:flutter/painting.dart' as painting
-    show TextPainter, TextSpan, TextStyle;
-import 'dart:ui' as ui show Size, Rect, TextDirection, TextAlign, Offset, Color;
+    show TextPainter, TextStyle;
+import 'dart:ui' as ui show Size, Rect, Color, Offset;
 
 void main() {
   material.runApp(new material.MaterialApp(home: new HomePage()));

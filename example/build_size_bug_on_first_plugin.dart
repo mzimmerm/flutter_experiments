@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart' as widgets; // note: external package imp
+// import 'package:flutter/widgets.dart' as widgets; // note: external package imp
 
 import 'dart:ui' as ui;
-import 'dart:math' as math;
 
 void main() {
   runApp(new MyApp());
