@@ -5,7 +5,7 @@ Flutter Notes
 * See also Dart notes:  [[file:~/dev/my-projects-source/public-on-github/dart-experiments/doc/dart-notes.org]]
 
 
-* ON TOP: Anatomy and Structure of a typical (stateless) Flutter App with stateful Home Page
+* ON TOP: Anatomy and Structure of a typical (stateless) Flutter "MyApp" with stateful Home Page "MyHomePage"
 
 #+BEGIN_SRC dart 
 
@@ -336,7 +336,6 @@ Do the above in:
 - *cd test_app; flutter run -d Pixel_2_API_28*
 - *cd test_app; flutter run -d all*
 - *but the device must be running separately - how? e.d. from II UI Tools->Android->AVD Manager*
-
 
 
 
@@ -688,7 +687,7 @@ The following table shows how Dart values are received on the platform side and 
 | List                       | java.util.ArrayList  | NSArray                                        |
 | Map                        | java.util.HashMap    | NSDictionary                                   |
 
-* Flutter dev, programming: Notes, Working source code examples
+* IN-PROGRESS Flutter dev, programming: Notes, Working source code examples
 
 ** *Code, Notes, Design, API, Layout*
 1. *Note: no PathEffect for dashed path* exists in Flutter
@@ -1144,14 +1143,14 @@ The following table shows how Dart values are received on the platform side and 
        mainAxisSize: MainAxisSize.min,
        children: []
  
-2) [ ] *TextField vs Text vs RichText vs. TextSpan vs TextFormField* - document those
+2) *TextField vs Text vs RichText vs. TextSpan vs TextFormField* - document those
 
    + *TextFormField* - Text-entry field. See  https://github.com/flutter/flutter/blob/master/examples/flutter_gallery/lib/demo/material/text_form_field_demo.dart on how to get user-entered text
 
    + *TextField* - ??
      You can listen to onChange events of your TextField and filter the list from that
 
-3) [ ] *Opacity*
+3) *Opacity*
    This example shows some Text when the _visible member field is true, and hides it when it is false:
 
    new Opacity(
@@ -1160,7 +1159,7 @@ The following table shows how Dart values are received on the platform side and 
    )
    This is more efficient than adding and removing the child widget from the tree on demand.
 
-4) [ ] *Image and Icon - whats the diff??* - todo Examples of icon creation that work
+4) *Image and Icon - whats the diff??* - todo Examples of icon creation that work
 
    1. *Icon from Image.asset - can be used for my images*  /this works/
      #+BEGIN_SRC dart
@@ -1352,9 +1351,11 @@ The following table shows how Dart values are received on the platform side and 
 
 15) *RotatedBox* - new widgets.RotatedBox(quarterTurns:  3, child: text,)
 
-16) *Text*
+16) *WidgetBuilder and builder* - such named class and parameters refer to a simple method or function *(BuildContext context) => Widget child*
+  - The context is the place in the widget three of the Widget where this ~builder~ is called. The implementing function needs the context to tell the child being build, where it belongs to the widget tree.
+  - Note that Flutter declares: ~typedef WidgetBuilder = Widget Function(BuildContext context);~ - a function accepting BuildContext and returning Widget
 
-17) *Text*
+17) *onPressed* - is generally typed as ~@required VoidCallback onPressed~. Basically a Function with or without parameters, returning void.
 
 18) *Text*
 
@@ -1517,12 +1518,12 @@ TEST
 
 * IN-PROGRESS Flutter Development issues and solutions
 
-** Memory error during build : Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
+** DONE Memory error during build : Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
 
 adb: failed to install /home/mzimmermann/airlift/airlift-projects/shift2bid/boardrunner_app/build/app/outputs/apk/app.apk: Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
 Error launching application on Android SDK built for x86 64.
 
-Solution:
+*Solution*
 
 Flutter IntelliJ: After getting an memory error on build: I edited the emulator, and replaced it's currently used x86_64 image with a Google Recommended x86 image. Alaso, apparently, using x86_64 is NOT compatile with Google Play Store!! 
 
@@ -1533,3 +1534,33 @@ What did I do exactly?
 
     | Release Name    | API | ABB | Target                   |
     | API 29 Download |  29 | x86 | Androiid API 29 (Google) |
+
+  - 
+
+** DONE Exception when using popup - investigation of *setState() or markNeedsBuild() called during build.*.
+
+Syncing files to device Android SDK built for x86...
+I/flutter ( 4920): ══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+I/flutter ( 4920): The following assertion was thrown building BoardrunnerHome(dirty, dependencies:
+I/flutter ( 4920): [_LocalizationsScope-[GlobalKey#0eefc], _InheritedTheme], state: _BoardrunnerHomeState#bb0f8):
+I/flutter ( 4920): *setState() or markNeedsBuild() called during build.*
+I/flutter ( 4920): This Overlay widget cannot be marked as needing to build because the framework is already in the
+I/flutter ( 4920): process of building widgets.  A widget can be marked as needing to be built during the build phase
+I/flutter ( 4920): only if one of its ancestors is currently building. This exception is allowed because the framework
+I/flutter ( 4920): builds parent widgets before children, which means a dirty descendant will always be built.
+I/flutter ( 4920): Otherwise, the framework might not visit this widget during this build phase.
+I/flutter ( 4920): The widget on which setState() or markNeedsBuild() was called was:
+I/flutter ( 4920):   Overlay-[LabeledGlobalKey<OverlayState>#eb08a]
+I/flutter ( 4920): The widget which was currently being built when the offending call was made was:
+I/flutter ( 4920):   BoardrunnerHome
+I/flutter ( 4920): 
+
+
+*Solution and core reason* 
+
+
+I was using incorrectly          
+- onPressed: _popupCaseFilterDialog(),
+-     instead of the correct
+- onPressed: _popupCaseFilterDialog,
+  

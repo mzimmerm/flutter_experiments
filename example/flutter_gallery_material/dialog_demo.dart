@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// mz : edit demo app for experiments:
+//      - find build that has "return Scaffold" in it.
+//        - This will likely belong to a State class, e.g. DialogDemoState
+//      - remove the lien with "actions: routeName"
+//      - use the class to which the Scaffold build belongs as MyHomePage
+//        - So in this example, DialogDemo is MyHomePage
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart'; // note: external package imp
 
@@ -99,12 +106,6 @@ class DialogDemoState extends State<DialogDemo> {
     });
   }
 
-  // mz : edit demo app for experiments:
-  //      - find build that has "return Scaffold" in it.
-  //        - This will likely belong to a State class, e.g. DialogDemoState
-  //      - remove the actions: routeName line
-  //      - use the class to which the Scaffold build belongs as MyHomePage
-  //        - So in this example, DialogDemo is MyHomePage
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
