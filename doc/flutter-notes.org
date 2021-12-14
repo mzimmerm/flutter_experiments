@@ -1,4 +1,4 @@
-#+TODO: TODO IN-PROGRESS LATER DONE
+#+TODO: TODO IN-PROGRESS-CONTINUES IN-PROGRESS-NOW LATER DONE
 
 * See also Dart notes:  [[file:~/dev/my-projects-source/public-on-github/dart-experiments/doc/dart-notes.org]]
 
@@ -101,14 +101,16 @@ This does not seem well described!
            - body: 
              - *new BodyWidget, core of the app*
 
-* Flutter Environment Full Installation using IntelliJ- see  https://flutter.dev/docs/get-started/install/linux but I am making simplifications - NO Android Studio needs to be installed, ONLY Android sdk-tools
+* Flutter Environment on my system. My Full Installation using IntelliJ.
+
+see  https://flutter.dev/docs/get-started/install/linux but I am making simplifications - *NO Android Studio needs to be installed, ONLY Android sdk-tools*
 
 This installation gets all Flutter tools work with:
 
 - Only Android sdk-tool + IntelliJ Idea UI (IIUI)
 - NO Android Studio. 
 
-** 0. Some environment I am setting ahead of time in /etc/profile.local 
+** 0.   Some environment I am setting ahead of time in /etc/profile.local 
 
 # Flutter - needs to find flutter executable. Will be installed in Step 1
 export FLUTTER_HOME=/home/mzimmermann/software/flutter/gitclone/flutter
@@ -121,7 +123,59 @@ export FLUTTER_DART_SDK_HOME=$FLUTTER_HOME/bin/cache/dart-sdk
 export ANDROID_HOME=/home/mzimmermann/software/android/sdk-tools-without-studio
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 
-** 1. Installed Flutter package - use flutter beta channel
+** 0.1. Where is Flutter and Dart on my system?
+
+- *Flutter directory is the first found on PATH which contains the "flutter" executable* - for me, ~$FLUTTER_HOME/bin~
+
+- InIDEA, this is defined in File -> Settings -> Languages and Frameworks -> Flutter -> Flutter SDK Path
+
+- All flutter commands, e.g. ~flutter channel stable; flutter upgrade~ places the upgrade to ~$FLUTTER_HOME~. This is equivalent to  ~cd $FLUTTER_HOME; git checkout stable; git fetch; git pull~.
+
+- Flutter's Dart is then in ~FLUTTER_DART_SDK_HOME=$FLUTTER_HOME/bin/cache/dart-sdk~
+
+- DART_HOME is not set and does not have any use in flutter or dart scripts.
+
+- For all Flutter operations, and also Dart operations, we should run dart from ~FLUTTER_DART_SDK_HOME~
+
+- =looking for source code of Flutter= shows generally ~packages/flutter/lib/src~ some exports in ~dev/devicelab~
+
+  #+begin_src sh
+  cd ~/software/flutter/gitclone/flutter 
+  find . -name framework.dart
+     # ./dev/devicelab/lib/framework/framework.dart
+     # ./packages/flutter/lib/src/widgets/framework.dart  *source*
+  find . -name chip.dart
+     # ./packages/flutter/lib/src/material/chip.dart      *source*
+  #+end_src
+
+** 0.2. IIUI - My Configuration: *If issues, always ensure Android SDK and Dart SDK are set in IIUI*
+
+Follow these steps:
+
+1. Check variables set in your environment. They are NOT needed but helpful. This is what mine shows.
+
+#+begin_example
+set | grep -i "flutter\|dart"
+FLUTTER_DART_SDK_HOME=/home/mzimmermann/software/flutter/gitclone/flutter/bin/cache/dart-sdk
+FLUTTER_HOME=/home/mzimmermann/software/flutter/gitclone/flutter
+FLUTTER_ROOT=/home/mzimmermann/software/flutter/gitclone/flutter
+PATH=/home/mzimmermann/software/android/sdk-tools-without-studio/emulator:/home/mzimmermann/software/android/sdk-tools-without-studio/platform-tools:/home/mzimmermann/bin:/usr/local/bin:/usr/bin:/bin:/snap/bin:/home/mzimmermann/software/java-based/groovy/bin:/home/mzimmermann/software/java-based/grails/bin:/home/mzimmermann/software/go/workspace/bin:/home/mzimmermann/software/flutter/gitclone/flutter/bin:/home/mzimmermann/.pub-cache/bin:/snap/bin:/home/mzimmermann/software/terraform/
+PWD=/home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_v2
+#+end_example
+
+1. IIUI -> Settings -> Languages and Frameworks, set "dart sdk", and set to $FLUTTER_DART_SDK_HOME
+
+2. IIUI -> Settings -> Languages and Frameworks, set "flutter sdk path", and set to $FLUTTER_HOME
+
+3. Now, IIUI -> Tools -> Android should show both AVD Manager, and SDK Manager.
+
+4. See also [[* 9. Documented working version of IIUI -> Tools -> Android -> SDK Manager][Documented working version of IIUI]]
+
+5. *In BIOS, Enable VT-x, and ensure that Linux has working KVM module*
+
+   If you go to IIUI -> Tools -> Android -> AVD and it shows "Troubleshoot - /dev/kvm not found", make sure to enable BIOS Virtual Machines.
+   
+** 1.   Installed Flutter package - use flutter beta channel
 
 This install is the same as getting a git branch beta from Flutter!
 
@@ -129,7 +183,6 @@ This install is the same as getting a git branch beta from Flutter!
 - Extracted to ~$FLUTTER_HOME/..~
 - so now we have flutter  in ~$FLUTTER_HOME~
 - At this point, we have issues in flutter doctor - ignore for now, they will be fixed later.
-
 
 ** 1.1. Check and change Flutter channels, upgrade Flutter
 
@@ -186,7 +239,7 @@ This install is the same as getting a git branch beta from Flutter!
     - Select SDK Tools from the top menu
     - Check Android SDK Command-line tools and click 'apply'.
 
-** 2. Intall Android sdk-tools
+** 2.   Intall Android sdk-tools
 
 - download https://developer.android.com/studio/#downloads sdk-tools-linux-yyyyyy.zip
 - extract to ANDROID_HOME=/home/mzimmermann/software/android/sdk-tools-without-studio
@@ -199,333 +252,332 @@ This install is the same as getting a git branch beta from Flutter!
 - Reboot
 - 
 
+** 3.   Finish installing Android sdk-tools from IIUI
+       
+We wi  ll create AVD from IIUI, NOT Android studio
+- Sta  rt IIUI e.g. by running *jetbrains-flutter-flutter_charts_sample_app-github.desktop*
+- In   IIUI -> File -> Settings -> "Android SDK"
+  - T  his will ask to set directory for Android SDK 
+  - I  t does say the android/sdk-tools-without-studio is invalid or some such .. but ignore and continue
+  - T  his process will add to *sdk-tools-without-studio* other directories beside *tools*, 
+  - I  n at the end it should say "Android SDK is up to date."
+  - C  lick Finish
+  - T  he *sdk-tools-without-studio* should now contain
+    #  +BEGIN_SRC sh
+    l  s -l /home/mzimmermann/software/android/sdk-tools-without-studio/tools/
+    #  +END_SRC
+       
+    #  +RESULTS:
+    |   total      | 1868 |             |       |        |     |    |      |                   |
+    |   -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 | 2017 | android           |
+    |   drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 | 2017 | bin               |
+    |   -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 | 2017 | emulator          |
+    |   -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 | 2017 | emulator-check    |
+    |   drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 | 2017 | lib               |
+    |   -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 | 2017 | mksdcard          |
+    |   -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 | 2017 | monitor           |
+    |   -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 | 2017 | NOTICE.txt        |
+    |   -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 2019 | package.xml       |
+    |   drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 | 2017 | proguard          |
+    |   -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 | 2017 | source.properties |
+    |   drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 | 2017 | support           |
+       
+    #  +RESULTS-finished:
+    |   total      | 1864 |             |       |        |     |    |       |                   |
+    |   -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 |  2017 | android           |
+    |   drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 |  2017 | bin               |
+    |   -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 |  2017 | emulator          |
+    |   -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 |  2017 | emulator-check    |
+    |   drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 |  2017 | lib               |
+    |   -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 |  2017 | mksdcard          |
+    |   -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 |  2017 | monitor           |
+    |   -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 |  2017 | NOTICE.txt        |
+    |   -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 21:55 | package.xml       |
+    |   drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 |  2017 | proguard          |
+    |   -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 |  2017 | source.properties |
+    |   drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 |  2017 | support           |
+- In   IIUI  File -> Settings -> "Android SDK" -> "SDK Tools"
+  - "  Android SDK Build-Tools" should have 29.0.1 installed!
+  - I  f not, click on "Edit" and should see, under "SDK Components Setup", something like
+    -   Android SDK (50.7 MB)
+    -   Android SDK Platform
+    -   Android SDK Location: /home/mzimmermann/software/android/sdk-tools-without-studio
+        [[file:flutter-notes.org_20210218_023736_P1CMB1.png]]
+    -   Click Next, Next again.
+    -   Click Finish
+    -   After this, the IIUI  File -> Settings -> "Android SDK" shold look like this:
+        [[file:flutter-notes.org_20210218_023913_Z5ZQWy.png]]
+    -   Select "Android 10.0+ (R)
+    -   Click "Apply"
+    -   Click :OK".
+    -   *This should finish installing the Android SDK*
+- *No  w restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
+       
+** 4.   Create AVD (Android Virtual Device Manager)
+       
+- *No  w restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
+- Not  e: IIUI now contains menu item "Tools -> Android -> AVD Manager"
+- If   you see this message: */dev/kvm is not found*
+  - G  o to Bios, and : *Enable VT-x in your BIOS security settings, ensure that your Linux distro has working KVM module.*
+  - T  he fix on my Asus Motherboard:
+    -   BIOS (F2 on startup)
+    -   Advanced Menu -> CPU Configuration -> SVM Mode - set to Enabled
+- Now   we can create the Android Virtual Device
+- Too  ls -> Android -> AVD Manager. You may already see a device. If not, do the following:
+  - +  Create Virtual Device
+  - s  electe Nexus 6
+  - "  a system image must be selected to continue"
+  - x  86 Images: Select "API 29 Download | API Level=29 | ABI=x86-64 | Target=Android 29 (Google APIs)"
+  - *  accept all Licence Agreements!!s*
+    -   Android Emulator 
+    -   Google APIs Intel x86 Atom_64 System Image
+  - T  he log:
+    #  +BEGIN_EXAMPLE
+    P  ackages to install: 
+    -   Android Emulator (emulator)
+    -   Google APIs Intel x86 Atom_64 System Image (system-images;android-29;google_apis;x86_64)
+       
+    P  reparing "Install Android Emulator (revision: 29.0.11)".
+    D  ownloading https://dl.google.com/android/repository/emulator-linux-5598178.zip
+    "  Install Android Emulator (revision: 29.0.11)" ready.
+    P  reparing "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)".
+    D  ownloading https://dl.google.com/android/repository/sys-img/google_apis/x86_64-29_r06-linux.zip
+    "  Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" ready.
+    I  nstalling Android Emulator in /home/mzimmermann/software/android/sdk-tools-without-studio/emulator
+    "  Install Android Emulator (revision: 29.0.11)" complete.
+    "  Install Android Emulator (revision: 29.0.11)" finished.
+    I  nstalling Google APIs Intel x86 Atom_64 System Image in /home/mzimmermann/software/android/sdk-tools-without-studio/system-images/android-29/google_apis/x86_64
+    "  Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" complete.
+    "  Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" finished.    
+    #  +END_EXAMPLE
+  - *  So now we have a new AVD emulator named /home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/*
+  - *  There were some crashes starting the device. Went away when edited the device to:*
+  - G  Raphics: Software - GLES 2.0
+  - B  oot Option: Cold Boot
+  - F  inish will create the "Nexus 6" AVD.
+  - T  ested by clicking Actions > - launch, on the |> button: [[file:flutter-notes.org_20210218_024926_KFkW02.png]] on the  "Nexus 6 API 29 2" AVD.
+** 5.   Launch the Nexus_6_API_29_2 AVD from IIUI -> Tools -> Android -> AVD Manager 
+       
+** 6.   Run the app - flutter_charts_sample_app *SECTION DESCRIBES SOLVING ISSUEs WITH the app NOT WORKING*
+       
+Click  ing the |> run in IIUI: [[file:flutter-notes.org_20210218_152217_xTW6nY.png]]
+       
+There   may be errors. This section is how to solve some of the errors I encountered.
+       
+*** 6  .1. The solution to the Flutter failing to run main.dart after GRADLE MIGRATION:
+       
+- IIU  I flutter clean
+- IIU  I flutter pub get
+- IIU  I flutter pub upgrade
+       
+       
+*"flu  tter run" or "IIUI->run main.dart" is failing with error* 
+       
+Probl  em is due to build.gradle having obsolete context after flutter changed distibutionUrl of the Gradle Wrapper
+Solut  ion is in the rest of this section
+       
+****   6.1.1. General description of build.gradle and gradle-wrapper.propertie
+       
+- Loo  k at urls: 
+https  ://github.com/flutter/flutter/wiki/Upgrading-Flutter-projects-to-Gradle-4.1-and-Android-Studio-Gradle-plugin-3.0.1
+https  ://stackoverflow.com/questions/49505245/could-not-find-com-android-tools-buildgradle4-4/
+https  ://developer.android.com/studio/releases/gradle-plugin.html#3-1-0
+- The  re are 2 types of files that are important:
+  - 1  . In the *flutter* git directory, *beta channel(montly), August 3, 2019*
+    -   1.1. file flutter/packages/flutter_tools/templates/app/android.tmpl/gradle/wrapper/gradle-wrapper.properties, this line
+        #+BEGIN_SRC 
+        distributionUrl=https\://services.gradle.org/distributions/gradle-4.10.2-all.zip # this determines the GRADLE WRAPPER version. At the same time, this is same as GRADLE version.
+        #+END_SRC
+    -   1.2 file flutter/packages/flutter_tools/templates/app/android-java.tmpl/build.gradle , this line(s)
+        #+BEGIN_SRC 
+        dependencies {
+          classpath 'com.android.tools.build:gradle:3.2.1' # This defines the GRADLE PLUGIN version that is understood by Android Studio.
+        }
+        #+END_SRC
+  - 2  . In the *app's directory (e.g. in flutter_charts_sample_app)*
+    -   2.1. file flutter_charts_sample_app/android/gradle/wrapper/gradle-wrapper.properties, this line
+        #+BEGIN_SRC 
+        distributionUrl=https\://services.gradle.org/distributions/gradle-4.10.2-all.zip # this determines the GRADLE WRAPPER version. At the same time, this is same as GRADLE version.
+         #+END_SRC
+    -   2.2 file flutter_charts_sample_app/android/build.gradle , this line(s)
+        #+BEGIN_SRC 
+        dependencies {
+          classpath 'com.android.tools.build:gradle:3.2.1' # This defines the GRADLE PLUGIN version that is understood by Android Studio.
+        }
+        #+END_SRC
+    -   2.3 file flutter_charts_sample_app/android/app/build.gradle , this line(s)
+        #+BEGIN_SRC 
+        android {
+          compileSdkVersion 29
+          buildToolsVersion '29.0.1'  // this must be same as "Android SDK Build-Tools" in Adroid Studio. MUST EXIST AS software/android/studio/sdk/build-tools/29.0.1
+          // etc ...
+        }
+        #+END_SRC
+       
+****   6.1.2. The Gradle / Run issue fix 
+       
+- [X]   laptop: create new project, investigate .android, .gradle, .gitignore 
+- [X]   use flutter beta.
+- [X]   create new project, investigate .android, .gradle, .gitignore 
+  - f  lutter-new-test_app> flutter create test_app
+  - t  here is NO .gradle before flutter run!
+- [X]   server: *ON DRASTIC GRADLE BUILD UPDATES, WE CAN IN ALL EXISTING PROJECTS, JUST REPLACE FOLLOWING EXISTING PROJECT FILES WITH A FRESHLY CREATED PROJECT FILES (flutter create test_app)*
+  #+B  EGIN_EXAMPLE
+  and  roid/app/build.gradle (BUT need replace test_app with app name)
+  and  roid/build.gradle
+  and  roid/gradle/wrapper/gradle-wrapper.properties
+  .gi  tignore (maybe)
+  #+E  ND_EXAMPLE
+- [X]   server alternative: *ALTERNATIVE: ON DRASTIC GRADLE BUILD UPDATES, WE CAN IN ALL EXISTING PROJECTS, EXTRACT THE "android" directory, and in all files that contain test_app, REPLACE WITH my_app_name*
+- [X]   server: add .emacs.d to .gitignore 
+- [X]   flutter_charts_sample_app, DELETE ALL FILES THAT ARE NOT IN INITIALLY CREATED PROJECT:
+  #+B  EGIN_SRC 
+  # r  m -r ~/.gradle 
+  rm   -r android/.gradle 
+  rm   android/gradle/.gitignore
+  rm   -r build 
+  rm   .packages
+  rm   android.iml
+  rm   -r doc/api/
+  rm   -r .dart_tool/
+  rm   -r .flutter-plugins
+  rm   -r .pub-cache/
+  rm   -r .pub/
+  #+E  ND_SRC
+- [ ]   server: In flutter_charts_sample_app, get working with new android, .gradle, .gitignore.
+  - [   ] flutter pub get
+  - [   ] flutter pub upgrade
+  - [   ] flutter clean
+  - [   ] start IIUI
+  - [   ] Re-sync
+  - [   ] start AVD 
+  - [   ] flutter run 
+  - [   ] commit and push
+- [ ]   server: Get all Flutter projects work as above.
+       
+       
+Do th  e above in:
+       
+- [X]   flutter_charts_sample_app
+- [X]   dart-experiments    *not an app, gitignore ignoring everything*
+- [X]   flutter-experiments *not an app, gitignore ignoring everything*
+- [X]   flutter_charts
+-      
+       
+*** D  ONE 6.2. Issue when running ~flutter_charts_sample_app~ from |> in IIUI: Error: "environment:  sdk: '>=2.10.0 <3.0.0', then: pub get failed (65; See https://dart.dev/go/sdk-constraint)"
+       
+The f  ull error 
+       
+#+beg  in_example
+Runni  ng "flutter pub get" in flutter_charts_sample_app...
+pubsp  ec.yaml has no lower-bound SDK constraint.
+You s  hould edit pubspec.yaml to contain an SDK constraint:
+       
+envir  onment:
+  sdk  : '>=2.10.0 <3.0.0'
+       
+See h  ttps://dart.dev/go/sdk-constraint
+pub g  et failed (65; See https://dart.dev/go/sdk-constraint)
+#+end  _example
+       
+The s  olution:
+       
+To fl  utter_charts_sample_app pubspec.yml, add this section
+       
+#+beg  in_src yaml
+envir  onment:
+  sdk  : '>=2.10.0 <3.0.0'
+#+end  _src
+       
+*** D  ONE 6.3. Warning running ~flutter_charts_sample_app~ regarding application was created using older Android version - *the application still works with this issue but we fix it anyway*
+       
+Your   Flutter application is created using an older version of the Android
+embed  ding. It's being deprecated in favor of Android embedding v2. Follow the
+steps   at
+       
+https  ://flutter.dev/go/android-project-migration
+       
+to mi  grate your project.
+       
+       
+Steps   I did in ~flutter_charts_sample_app~
+       
+- Go   to https://flutter.dev/go/android-project-migration
+- Edi  t android/app/src/main/java/com/yourcompany/flutterchartssampleapp/MainActivity.java, and delete the lines indicated in the document with "-" and add lines with "+"
+- Edi  t android/app/src/main/AndroidManifest.xml and
+  - R  emove the reference to FlutterApplication from the application tag
+  - R  emove all <meta-data> tags with key android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
+  - A  dd a new <meta-data> tag under <application> (after </activity>
+- Edi  t android/app/src/main/res/values/styles.xml - hmm, no change here
+       
+Runni  ng the app now does not show the message 
+       
+*** D  ONE 6.4 Warning  running ~flutter_charts_sample_app~: Your app isn't using AndroidX - To avoid potential build failures, you can quickly migrate your app by following the steps on https://goo.gl/CP92wY
+       
+*this   appears only fixable using android studio - no - THERE IS A SOLUTION - RECREATE THE APP AND COPY FILES OVER - THIS ALSO FIXES WARNING 6.3*
+       
+Steps  :
+       
+- mv   flutter_charts_sample_app flutter_charts_sample_app_old
+- flu  tter create --template=app flutter_charts_sample_app
+- ope  n the 2 dirs: old on left, new on right
+  - c  opy old to new:
+    -   .git
+    -   NO .idea
+    -   lib (override)
+    -   NO test
+    -   .gitignore
+    -   NO flutter_charts_sample_app_android.iml
+    -   NO flutter_charts_sample_app.iml
+    -   pubspeck.lock
+    -   pubspec.yaml 
+    -   README.md
+  - I  n new dir, run ~flutter pub upgrade~ - this recreates the ~.dart_tool~ directory, recalculates and recreates the ".pubspec.lock" with calculated dependent packages, downloads packages used in the lock to ~~/.pub-cache~ 
+       
+       
+After   the above changes,both 6.3 and 6.4 errors are gone
+       
+** 7.   General note about "Android SDK Build-Tools"
+       
+- In   IIUI, this can be found in *File -> Settings -> Android SDK*
+- *Th  is is different, and can have a different version from "Android SDK Platform-Tools"!!!*
+- On   disk, this exists in *$ANDROID_HOME/build-tools/29.0.1*
+  #+b  egin_example
+  ls   -l $ANDROID_HOME/build-tools:
+  tot  al used in directory 12 available 66.5 GiB
+  drw  xr-xr-x  5 mzimmermann users   48 Feb 18 02:38 .
+  drw  xr-xr-x 15 mzimmermann users  252 Feb 19 00:49 ..
+  drw  xr-xr-x  5 mzimmermann users 4096 Aug  5  2019 28.0.3
+  drw  xr-xr-x  5 mzimmermann users 4096 Aug  4  2019 29.0.1
+  drw  xr-xr-x  6 mzimmermann users 4096 Feb 18 02:38 30.0.3
+  #+e  nd_example
+- In   build.gradle (ONLY in the flutter_charts_sample_app/android/app/build.gradle), this is the *buildToolsVersion '29.0.1'*
+       
+** 8.   Where is the virtual device (AVD) named in IIUI "Nexus 6 API 29 2" located and how to address it?
+       
+- It   is in */home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/* *!!!!!* 
+- We   can run app from command line as 
+- *cd   test_app; flutter run -d Nexus_6_API_29_2*
+- *cd   test_app; flutter run -d all*
+- *bu  t the device must be running separately - how? e.d. from IIUI Tools->Android->AVD Manager*
+- *To   run an emulator, run ~flutter emulators --launch <emulator id>~ *
+       
+  The   above is probably a shortcut to Android SDK command ~emulator -avd avd_name [ {-option [value]} .. ]~, see https://developer.android.com/studio/run/emulator-commandline
+       
+Ex: ~  flutter emulators~ lists emulators
+       
+2 ava  ilable emulators:
+       
+Nexus  _6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
+Nexus  _6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
+       
+To ru  n an emulator, run ~flutter emulators --launch <emulator id>~, for example: ~flutter emulators --launch 'Nexus_6_API_29_2'~
+       
+To cr  eate a new emulator, run ~flutter emulators --create [--name xyz]~
+       
+** 9.   Documented working version of IIUI -> Tools -> Android -> SDK Manager
 
-** 3. Finish installing Android sdk-tools from IIUI
-
-We will create AVD from IIUI, NOT Android studio
-- Start IIUI e.g. by running *jetbrains-flutter-flutter_charts_sample_app-github.desktop*
-- In IIUI -> File -> Settings -> "Android SDK"
-  - This will ask to set directory for Android SDK 
-  - It does say the android/sdk-tools-without-studio is invalid or some such .. but ignore and continue
-  - This process will add to *sdk-tools-without-studio* other directories beside *tools*, 
-  - In at the end it should say "Android SDK is up to date."
-  - Click Finish
-  - The *sdk-tools-without-studio* should now contain
-    #+BEGIN_SRC sh
-    ls -l /home/mzimmermann/software/android/sdk-tools-without-studio/tools/
-    #+END_SRC
-
-    #+RESULTS:
-    | total      | 1868 |             |       |        |     |    |      |                   |
-    | -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 | 2017 | android           |
-    | drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 | 2017 | bin               |
-    | -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 | 2017 | emulator          |
-    | -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 | 2017 | emulator-check    |
-    | drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 | 2017 | lib               |
-    | -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 | 2017 | mksdcard          |
-    | -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 | 2017 | monitor           |
-    | -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 | 2017 | NOTICE.txt        |
-    | -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 2019 | package.xml       |
-    | drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 | 2017 | proguard          |
-    | -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 | 2017 | source.properties |
-    | drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 | 2017 | support           |
-
-    #+RESULTS-finished:
-    | total      | 1864 |             |       |        |     |    |       |                   |
-    | -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 |  2017 | android           |
-    | drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 |  2017 | bin               |
-    | -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 |  2017 | emulator          |
-    | -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 |  2017 | emulator-check    |
-    | drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 |  2017 | lib               |
-    | -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 |  2017 | mksdcard          |
-    | -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 |  2017 | monitor           |
-    | -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 |  2017 | NOTICE.txt        |
-    | -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 21:55 | package.xml       |
-    | drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 |  2017 | proguard          |
-    | -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 |  2017 | source.properties |
-    | drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 |  2017 | support           |
-- In IIUI  File -> Settings -> "Android SDK" -> "SDK Tools"
-  - "Android SDK Build-Tools" should have 29.0.1 installed!
-  - If not, click on "Edit" and should see, under "SDK Components Setup", something like
-    - Android SDK (50.7 MB)
-    - Android SDK Platform
-    - Android SDK Location: /home/mzimmermann/software/android/sdk-tools-without-studio
-      [[file:flutter-notes.org_20210218_023736_P1CMB1.png]]
-    - Click Next, Next again.
-    - Click Finish
-    - After this, the IIUI  File -> Settings -> "Android SDK" shold look like this:
-      [[file:flutter-notes.org_20210218_023913_Z5ZQWy.png]]
-    - Select "Android 10.0+ (R)
-    - Click "Apply"
-    - Click :OK".
-    - *This should finish installing the Android SDK*
-- *Now restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
-
-
-** 4. Create AVD (Android Virtual Device Manager)
-
-- *Now restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
-- Note: IIUI now contains menu item "Tools -> Android -> AVD Manager"
-- If you see this message: */dev/kvm is not found*
-  - Go to Bios, and : *Enable VT-x in your BIOS security settings, ensure that your Linux distro has working KVM module.*
-  - The fix on my Asus Motherboard:
-    - BIOS (F2 on startup)
-    - Advanced Menu -> CPU Configuration -> SVM Mode - set to Enabled
-- Now we can create the Android Virtual Device
-- Tools -> Android -> AVD Manager. You may already see a device. If not, do the following:
-  - +Create Virtual Device
-  - selecte Nexus 6
-  - "a system image must be selected to continue"
-  - x86 Images: Select "API 29 Download | API Level=29 | ABI=x86-64 | Target=Android 29 (Google APIs)"
-  - *accept all Licence Agreements!!s*
-    - Android Emulator 
-    - Google APIs Intel x86 Atom_64 System Image
-  - The log:
-    #+BEGIN_EXAMPLE
-    Packages to install: 
-    - Android Emulator (emulator)
-    - Google APIs Intel x86 Atom_64 System Image (system-images;android-29;google_apis;x86_64)
-    
-    Preparing "Install Android Emulator (revision: 29.0.11)".
-    Downloading https://dl.google.com/android/repository/emulator-linux-5598178.zip
-    "Install Android Emulator (revision: 29.0.11)" ready.
-    Preparing "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)".
-    Downloading https://dl.google.com/android/repository/sys-img/google_apis/x86_64-29_r06-linux.zip
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" ready.
-    Installing Android Emulator in /home/mzimmermann/software/android/sdk-tools-without-studio/emulator
-    "Install Android Emulator (revision: 29.0.11)" complete.
-    "Install Android Emulator (revision: 29.0.11)" finished.
-    Installing Google APIs Intel x86 Atom_64 System Image in /home/mzimmermann/software/android/sdk-tools-without-studio/system-images/android-29/google_apis/x86_64
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" complete.
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" finished.    
-    #+END_EXAMPLE
-  - *So now we have a new AVD emulator named /home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/*
-  - *There were some crashes starting the device. Went away when edited the device to:*
-  - GRaphics: Software - GLES 2.0
-  - Boot Option: Cold Boot
-  - Finish will create the "Nexus 6" AVD.
-  - Tested by clicking Actions > - launch, on the |> button: [[file:flutter-notes.org_20210218_024926_KFkW02.png]] on the  "Nexus 6 API 29 2" AVD.
-** 5. Launch the Nexus_6_API_29_2 AVD from IIUI -> Tools -> Android -> AVD Manager 
-
-
-** 6. Run the app - flutter_charts_sample_app *SECTION DESCRIBES SOLVING ISSUEs WITH the app NOT WORKING*
-
-Clicking the |> run in IIUI: [[file:flutter-notes.org_20210218_152217_xTW6nY.png]]
-
-There may be errors. This section is how to solve some of the errors I encountered.
-
-*** 6.1. The solution to the Flutter failing to run main.dart after GRADLE MIGRATION:
-
-- IIUI flutter clean
-- IIUI flutter packages get
-- IIUI flutter packages upgrade
-
-
-*"flutter run" or "IIUI->run main.dart" is failing with error* 
-
-Problem is due to build.gradle having obsolete context after flutter changed distibutionUrl of the Gradle Wrapper
-Solution is in the rest of this section
-
-**** 6.1.1. General description of build.gradle and gradle-wrapper.propertie
-
-- Look at urls: 
-https://github.com/flutter/flutter/wiki/Upgrading-Flutter-projects-to-Gradle-4.1-and-Android-Studio-Gradle-plugin-3.0.1
-https://stackoverflow.com/questions/49505245/could-not-find-com-android-tools-buildgradle4-4/
-https://developer.android.com/studio/releases/gradle-plugin.html#3-1-0
-- There are 2 types of files that are important:
-  - 1. In the *flutter* git directory, *beta channel(montly), August 3, 2019*
-    - 1.1. file flutter/packages/flutter_tools/templates/app/android.tmpl/gradle/wrapper/gradle-wrapper.properties, this line
-      #+BEGIN_SRC 
-      distributionUrl=https\://services.gradle.org/distributions/gradle-4.10.2-all.zip # this determines the GRADLE WRAPPER version. At the same time, this is same as GRADLE version.
-      #+END_SRC
-    - 1.2 file flutter/packages/flutter_tools/templates/app/android-java.tmpl/build.gradle , this line(s)
-      #+BEGIN_SRC 
-      dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1' # This defines the GRADLE PLUGIN version that is understood by Android Studio.
-      }
-      #+END_SRC
-  - 2. In the *app's directory (e.g. in flutter_charts_sample_app)*
-    - 2.1. file flutter_charts_sample_app/android/gradle/wrapper/gradle-wrapper.properties, this line
-      #+BEGIN_SRC 
-      distributionUrl=https\://services.gradle.org/distributions/gradle-4.10.2-all.zip # this determines the GRADLE WRAPPER version. At the same time, this is same as GRADLE version.
-       #+END_SRC
-    - 2.2 file flutter_charts_sample_app/android/build.gradle , this line(s)
-      #+BEGIN_SRC 
-      dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1' # This defines the GRADLE PLUGIN version that is understood by Android Studio.
-      }
-      #+END_SRC
-    - 2.3 file flutter_charts_sample_app/android/app/build.gradle , this line(s)
-      #+BEGIN_SRC 
-      android {
-        compileSdkVersion 29
-        buildToolsVersion '29.0.1'  // this must be same as "Android SDK Build-Tools" in Adroid Studio. MUST EXIST AS software/android/studio/sdk/build-tools/29.0.1
-        // etc ...
-      }
-      #+END_SRC
-
-**** 6.1.2. The Gradle / Run issue fix 
-
-- [X] laptop: create new project, investigate .android, .gradle, .gitignore 
-- [X] use flutter beta.
-- [X] create new project, investigate .android, .gradle, .gitignore 
-  - flutter-new-test_app> flutter create test_app
-  - there is NO .gradle before flutter run!
-- [X] server: *ON DRASTIC GRADLE BUILD UPDATES, WE CAN IN ALL EXISTING PROJECTS, JUST REPLACE FOLLOWING EXISTING PROJECT FILES WITH A FRESHLY CREATED PROJECT FILES (flutter create test_app)*
-  #+BEGIN_EXAMPLE
-  android/app/build.gradle (BUT need replace test_app with app name)
-  android/build.gradle
-  android/gradle/wrapper/gradle-wrapper.properties
-  .gitignore (maybe)
-  #+END_EXAMPLE
-- [X] server alternative: *ALTERNATIVE: ON DRASTIC GRADLE BUILD UPDATES, WE CAN IN ALL EXISTING PROJECTS, EXTRACT THE "android" directory, and in all files that contain test_app, REPLACE WITH my_app_name*
-- [X] server: add .emacs.d to .gitignore 
-- [X] flutter_charts_sample_app, DELETE ALL FILES THAT ARE NOT IN INITIALLY CREATED PROJECT:
-  #+BEGIN_SRC 
-  # rm -r ~/.gradle 
-  rm -r android/.gradle 
-  rm android/gradle/.gitignore
-  rm -r build 
-  rm .packages
-  rm android.iml
-  rm -r doc/api/
-  rm -r .dart_tool/
-  rm -r .flutter-plugins
-  rm -r .pub-cache/
-  rm -r .pub/
-  #+END_SRC
-- [ ] server: In flutter_charts_sample_app, get working with new android, .gradle, .gitignore.
-  - [ ] flutter packages get
-  - [ ] flutter packages upgrade
-  - [ ] flutter clean
-  - [ ] start IIUI
-  - [ ] Re-sync
-  - [ ] start AVD 
-  - [ ] flutter run 
-  - [ ] commit and push
-- [ ] server: Get all Flutter projects work as above.
-
-
-Do the above in:
-
-- [X] flutter_charts_sample_app
-- [X] dart-experiments    *not an app, gitignore ignoring everything*
-- [X] flutter-experiments *not an app, gitignore ignoring everything*
-- [X] flutter_charts
-- 
-
-
-*** DONE 6.2. Issue when running ~flutter_charts_sample_app~ from |> in IIUI: Error: "environment:  sdk: '>=2.10.0 <3.0.0', then: pub get failed (65; See https://dart.dev/go/sdk-constraint)"
-
-The full error 
-
-#+begin_example
-Running "flutter pub get" in flutter_charts_sample_app...
-pubspec.yaml has no lower-bound SDK constraint.
-You should edit pubspec.yaml to contain an SDK constraint:
-
-environment:
-  sdk: '>=2.10.0 <3.0.0'
-
-See https://dart.dev/go/sdk-constraint
-pub get failed (65; See https://dart.dev/go/sdk-constraint)
-#+end_example
-
-The solution:
-
-To flutter_charts_sample_app pubspec.yml, add this section
-
-#+begin_src yaml
-environment:
-  sdk: '>=2.10.0 <3.0.0'
-#+end_src
-
-*** DONE 6.3. Warning running ~flutter_charts_sample_app~ regarding application was created using older Android version - *the application still works with this issue but we fix it anyway*
-
-Your Flutter application is created using an older version of the Android
-embedding. It's being deprecated in favor of Android embedding v2. Follow the
-steps at
-
-https://flutter.dev/go/android-project-migration
-
-to migrate your project.
-
-
-Steps I did in ~flutter_charts_sample_app~
-
-- Go to https://flutter.dev/go/android-project-migration
-- Edit android/app/src/main/java/com/yourcompany/flutterchartssampleapp/MainActivity.java, and delete the lines indicated in the document with "-" and add lines with "+"
-- Edit android/app/src/main/AndroidManifest.xml and
-  - Remove the reference to FlutterApplication from the application tag
-  - Remove all <meta-data> tags with key android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
-  - Add a new <meta-data> tag under <application> (after </activity>
-- Edit android/app/src/main/res/values/styles.xml - hmm, no change here
-
-Running the app now does not show the message 
-
-*** DONE 6.4 Warning  running ~flutter_charts_sample_app~: Your app isn't using AndroidX - To avoid potential build failures, you can quickly migrate your app by following the steps on https://goo.gl/CP92wY
-
-*this appears only fixable using android studio - no - THERE IS A SOLUTION - RECREATE THE APP AND COPY FILES OVER - THIS ALSO FIXES WARNING 6.3*
-
-Steps:
-
-- mv flutter_charts_sample_app flutter_charts_sample_app_old
-- flutter create --template=app flutter_charts_sample_app
-- open the 2 dirs: old on left, new on right
-  - copy old to new:
-    - .git
-    - NO .idea
-    - lib (override)
-    - NO test
-    - .gitignore
-    - NO flutter_charts_sample_app_android.iml
-    - NO flutter_charts_sample_app.iml
-    - pubspeck.lock
-    - pubspec.yaml 
-    - README.md
-  - In new dir, run ~flutter packages upgrade~ - this recreates the ~.dart_tool~ directory, recalculates and recreates the ".pubspec.lock" with calculated dependent packages, downloads packages used in the lock to ~~/.pub-cache~ 
-
-
-After the above changes,both 6.3 and 6.4 errors are gone
-
-** 7. General note about "Android SDK Build-Tools"
-
-- In IIUI, this can be found in *File -> Settings -> Android SDK*
-- *This is different, and can have a different version from "Android SDK Platform-Tools"!!!*
-- On disk, this exists in *$ANDROID_HOME/build-tools/29.0.1*
-  #+begin_example
-  ls -l $ANDROID_HOME/build-tools:
-  total used in directory 12 available 66.5 GiB
-  drwxr-xr-x  5 mzimmermann users   48 Feb 18 02:38 .
-  drwxr-xr-x 15 mzimmermann users  252 Feb 19 00:49 ..
-  drwxr-xr-x  5 mzimmermann users 4096 Aug  5  2019 28.0.3
-  drwxr-xr-x  5 mzimmermann users 4096 Aug  4  2019 29.0.1
-  drwxr-xr-x  6 mzimmermann users 4096 Feb 18 02:38 30.0.3
-  #+end_example
-- In build.gradle (ONLY in the flutter_charts_sample_app/android/app/build.gradle), this is the *buildToolsVersion '29.0.1'*
-
-** 8. Where is the virtual device (AVD) named in IIUI "Nexus 6 API 29 2" located and how to address it?
-
-- It is in */home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/* *!!!!!* 
-- We can run app from command line as 
-- *cd test_app; flutter run -d Nexus_6_API_29_2*
-- *cd test_app; flutter run -d all*
-- *but the device must be running separately - how? e.d. from IIUI Tools->Android->AVD Manager*
-- *To run an emulator, run 'flutter emulators --launch <emulator id>'*
-
-
-flutter emulators
-2 available emulators:
-
-Nexus_6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
-Nexus_6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
-
-To run an emulator, run 'flutter emulators --launch <emulator id>'.
-To create a new emulator, run 'flutter emulators --create [--name xyz
-
-
-
-** 9. Documented working version of IIUI -> Tools -> Android -> SDK Manager (or go to Settings -> Appearance & Behavioud -> System Settings -> Android SDK)
+(or go to Settings -> Appearance & Behavioud -> System Settings -> Android SDK)
 
 [[file:flutter-notes.org_20210304_195634_Qwq3v9.png]]
 
@@ -533,740 +585,8 @@ To create a new emulator, run 'flutter emulators --create [--name xyz
 
 [[file:flutter-notes.org_20210304_195741_eQtZ26.png]]
 
-* ~dart_dev tools~ analyze, format, test
-
-See https://pub.dev/packages/dart_dev
-
-Add dart_dev as a dev dependency in your project:
-
-# pubspec.yaml
-dev_dependencies:
-  dart_dev: ^3.0.0
-By default, this provides three core tasks:
-
-analyze
-format
-test
-
-Run any of these tools via the dart_dev command-line app:
-
-$ pub run dart_dev analyze
-[INFO] Running subprocess:
-dartanalyzer .
---------------------------
-Analyzing dart_dev...
-No issues found!
-We recommend adding a ddev alias:
-
-Or run:
-
-~alias ddev='pub run dart_dev'~
-
-~pub run dart_dev~
-
-* ~flutter pub[or packages] create/build/upgrade/clean/run~ - Flutter and Dart projects, packages and dependencies
-** Note: ~pub get~ vs. ~flutter pub get~ vs. ~flutter packages pub get~ vs. ~flutter packages get~
-
-This is completely confusing, but the following seems true:
-
- 1. ~pub get~                    # Runs the "pub" command in ~$DART_HOME~
- 2. ~flutter          pub get~   # Msg: *Running "flutter pub get" in flutter_charts_sample_app* - Runs the "pub" command in ~$FLUTTER_DART_SDK_HOME~?
- 3. ~flutter packages     get~   # Msg: *Running "flutter pub get" in flutter_charts_sample_app* - SO THIS CLAIMS TO BE THE SAME AS 2. ABOVE - *USE THIS*
- 4. ~flutter packages pub get~   # Msg: *Resolving dependencies \n decimal 0.3.5 (1.0.0 available) \n Got dependencies!* - SO THIS SEEMS TO BE DOING SOMETHING ELSE THAN 2., 3. .. BUT WHAT IS THE DIFFERENCE FROM THE ABOVE? FROM HELP (~flutter help packages pub~), IT APPEARS THIS VERSION "passes remaining arguments (get) to Dart's "pub" tool.
-
-** Documentation, see https://flutter.io/upgrading/ . 
-
-A few notes from this site:
-
-- We strongly recommend tracking the =beta= branch in the flutter repository.
-- All upgrades commands from command line must be done in one of:
-
-  - directory where my_package is located (e.g. flutter_charts)
-  - or globally, e.g. where Flutter is installed on the system, ~/.pub etc (todo ????? *does global upgrade exist?*)
-
-** *flutter pub upgrade/get* - dependencies commands
-
-- From the command line
-  - ~cd my_package~ # e.g. flutter_charts
-  - ~flutter channel beta~  # stable, dev - this is same as git checkout beta in $FLUTTER_HOME
-  - ~flutter upgrade~       # Upgrades *both Flutter and Dart SDK inside Flutter* - this is same as git pull in $FLUTTER_HOME
-    - Upgrades both flutter SDK in $FLUTTER_HOME, and the included Dart SDK. How does this know the path to git pull to? Because flutter command MUST be on PATH , in my case $FLUTTER_HOME/bin/flutter - this runs and figures out it's directory and .git location.
-  - ~flutter packages get~
-    - Downloads all dependencies listed in ~.pubspec.lock~ (if exists) - this is the "normal" operation. 
-    - In detail:
-      - if ~.pubspec.lock~ exists, does not change it
-      - else recalculates dependencies from the pubspec.yaml file, writes ~.pubspec.lock~
-      - Downloads all dependencies listed in ~.pubspec.lock~ to ~~/.pub-cache~
-  - ~flutter packages upgrade~ 
-    - Ignores ~.pubspec.lock~, recalculates dependencies from ~pubspec.yaml~,  then creates a new ~.pubspec.lock~ AND new ~.packages~ directory.
-    - After that, proceceeds same as 'get' - Downloads all dependencies listed in ~.pubspec.lock~ 
-    - If you run flutter upgrade and if there are newer versions of packages than the ones your constraints allow, they should be marked in the output, you then need to manually fix the constraint
-    
-- Notes:
-  - *Dependencies* : are packages that end up in ~~/.pub-cache~, in a source form, with a standard package structure from the pub server.
-  - ~pub upgrade~  Dart project upgrade dependency packages
-  - ~flutter upgrade~ - Flutter project upgrade  both the packages and Flutter SDK itself
-  - ~~/.pub-cache~ - local storage of plugins, that are ever needed by all projects (for which ~pub upgrade~ was run)
-  - ~my_package/.packages~ - this file is created every time after ~.pubspec.lock~ is created. Contains same package list. This file just points from package name to ~~/.pub-cache~. Example: one line from .packages: ~analyzer:file:///home/mzimmermann/.pub-cache/hosted/pub.dartlang.org/analyzer-0.31.2-alpha.2/lib/~. See https://flutter.io/using-packages/ . 
-  - Issues related to ~flutter packages get~ vs 'flutter pub get'  - see https://github.com/flutter/flutter/issues/10403
-
-  - Everything in the ~~my_package/.packages~ file links to ~/.pub-cache, except:
-    - flutter: file://$FLUTTER_HOME/packages/flutter/lib/ 
-    - flutter_test: file://$FLUTTER_HOME/packages/flutter_test/lib/
-
-- From IntelliJ
-  - (not sure how to switch channel)
-  - Tools -> Flutter -> Flutter upgrade
-
-** *flutter create/build/clean/run/pub or packages [get/upgrade/publish]* 
-*** All commands Except flutter create below assume we are in existing project: 
-~cd my_package~
-*** ~flutter create --template=package my_package~                    - create a Flutter project that can be used as a library package publishable on *pub* https://pub.dartlang.org/. See https://flutter.io/developing-packages/
-*** ~flutter create my_app~                                           - *what is the difference from the above?*
-*** ~flutter create --org com.example --template=plugin my_package~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
-*** ~flutter packages get/upgrade~                                    - See the summarey
-*** ~flutter build clean~                                             - clean build
-*** ~flutter run~                                                     - Runs the package lib/src/main.dart if present
-- ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
-- ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
-*** ~flutter packages pub publish --dry-run~                          - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.dev/docs/development/packages-and-plugins/developing-packages#publish
-*** ~flutter packages pub publish~
-
-Without dry-run, flutter generates a link.
-- Open link in browser logged in with the email you want to use, e.g.
-- https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&response_type=code&client_id=818368855108-8grd2eg9tj9f38os6f1urbcvsq399u8n.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A37725&code_challenge=xsdBLNYbb-_WoPwN2bBd6EwxUrPRQcNwXGf0JCuKD9s&code_challenge_method=S256&scope=openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email
-- Select the email
-- This is considered authorization.
-- "Successfully uploaded package."
-** ~flutter pub global activate dcdg~ - Install an executable package globally 
-
-- dcdg is a package which generates uml
-- if installed 'globally', it will add executable to ~~/.pub-cache/bin~
-- this dir should be added to path 
-- ~flutter pub global activate dcdg~ # Installs ~/.pub-cache/bin/dcdg executable 
-- ~export PATH="$PATH":"$HOME/.pub-cache/bin"~
-- ~cd my_package~
-- ~flutter pub global run dcdg~ # creates UML, spits results to stdout
-- ~flutter pub global run dcdg -o flutter_charts.plantuml~ # as above, creates a file with plantuml text
-- ~java -jar ~/software/java-based/plantuml/plantuml.1.2017.12.jar flutter_charts.plantuml~ # Generates flutter_charts.png UML
-
-* IN-PROGRESS Flutter null safety migration of my packages
-
-This section contains documents and notes on migrating any flutter project to null safety.
-
-There are 2 ways to migrate: sound and unsound, documented online here:
-
-- "Sound null safety" - all dependent packages have been migrated - See https://dart.dev/null-safety
-- "Unsound null safety" - only my package migrates - See https://dart.dev/null-safety/unsound-null-safety
-- Generaral guide to mull safety migration - See https://dart.dev/null-safety/migration-guide
-- More links in bookmarks
-
-
-** Nutshell notes from this null safety migration link  https://dart.dev/null-safety/migration-guide
-
-Note: Use 'dart' in the commands. Although some 'flutter' versions exist (exception, e.g. dart migrate). If 'flutter' version exist, they seem to function the same if dart path is from flutter/bin/dart
-
-*** 1. Before code Migrate
-**** Switch to the Dart 2.12 release
-
-Check that you have Dart 2.12 or later:
-
- ~dart --version~
- 
-**** Check dependency status
-Get the migration state of your package’s dependencies, using the following command:
-
- ~dart pub outdated --mode=null-safety~
- 
-If the output says that all the packages support null safety, then you can start migrating.
-
-Otherwise, use the Resolvable column to find null-safe releases, if they exist, then edit your pubspec.yaml to set to the Latest version.
-
-**** Update dependencies
-Before migrating your package’s code, update its dependencies to null-safe versions:
-
-- Run ~dart pub upgrade --null-safety~ to upgrade to the latest versions supporting null safety. Note: *This command changes your pubspec.yaml* file.
-
-- Run ~dart pub get~.
-
-*** 2. Migrate your code
-
-Most of the changes that your code needs to be null safe are easily predictable. For example, if a variable can be null, its *type needs a ? suffix*. A named parameter that shouldn’t be nullable needs to be *marked required*.
-
-You have two options for migrating:
-
-- *Use the migration tool*, which can make most of the easily predictable changes for you.
-- *Migrate your code by hand*.
-
-**** Using the migration tool
-
-The migration tool takes a package of null-unsafe Dart code and converts it to null safety. You can guide the tool’s conversion by adding hint markers to your Dart code.
-
-Before starting the tool, make sure you’re ready:
-
-- Use the latest beta release of the Dart SDK.
-- Use ~dart pub outdated --mode=null-safety~ to make sure that all dependencies are null safe and up-to-date.
-- Start the migration tool by running the dart migrate command in the directory that contains the package’s pubspec.yaml file:
-
- ~dart migrate~
- 
-If your package is ready to migrate, then the tool produces a line like the following:
-
-View the migration suggestions by visiting:
-
-  http://127.0.0.1:60278/Users/you/project/mypkg.console-simple?authToken=Xfz0jvpyeMI%3D
-  
-Visit that URL in a Chrome browser to see an interactive UI where you can guide the migration process:
-
-https://dart.dev/null-safety/migration-tool.png
-
-For every variable and type annotation, you can see what nullability the tool infers. For example, in the preceding screenshot, the tool infers that the ints list (previously a list of int) in line 1 is nullable, and thus should be a list of int?.
-
-***** Understanding migration results
-To see the reasons for each change (or non-change), click its line number in the Proposed Edits pane. The reasons appear in the Edit Details pane.
-
-For example, consider the following code, from before null safety:
-
-#+BEGIN_SRC javascript
-var ints = const <int>[0, null];
-var zero = ints[0];
-var one = zero + 1;
-var zeroOne = <int>[zero, one];
-#+END_SRC
-
-The default migration when this code is outside a function (it’s different within a function) is backward compatible but not ideal:
-
-#+BEGIN_SRC 
-var ints = const <int?>[0, null];
-var zero = ints[0];
-var one = zero! + 1;
-var zeroOne = <int?>[zero, one];
-#+END_SRC
-By clicking the line 3 link, you can see the migration tool’s reasons for adding the !. Because you know that zero can’t be null, you can improve the migration result.
-
-***** Improving migration results
-
-When analysis infers the wrong nullability, you can override its proposed edits by inserting temporary hint markers:
-
-When you’ve finished editing your code, click Rerun from sources to pick up your changes.
-
-The following table shows the hint markers that you can use to change the migration tool’s proposed edits.
-
-| Hint marker      | Effect on the migration tool                                                                        |
-| expression /*!*/ | Adds a ! to the migrated code, casting expression to its underlying non-nullable type.              |
-| type /*!*/       | Marks type as non-nullable.                                                                         |
-| /*?*/            | Marks the preceding type as nullable.                                                               |
-| /*late*/         | Marks the variable declaration as late, indicating that it has late initialization.                 |
-| /*late final*/   | Marks the variable declaration as late final, indicating that it has late, one-time initialization. |
-| /*required*/     | Marks the parameter as required.                                                                    |
-
-A single hint can have ripple effects elsewhere in the code. In the example from before, manually adding a /*!*/ marker where zero is assigned its value (on line 2) makes the migration tool infer the type of zero as int instead of int?. This type change can affect code that directly or indirectly uses zero.
-
-var zero = ints[0]/*!*/;
-With the above hint, the migration tool changes its proposed edits, as the following code snippets show. Line 3 no longer has a ! after zero, and in line 4 zeroOne is inferred to be a list of int, not int?.
-
-| First migration                  | hint      |        |
-| var   ints      =  const         | <int?>[0, | null]; |
-| var   zero      =  ints[0];      |           |        |
-| var   one       =  zero!         | +         | 1;     |
-| var   zeroOne   =  <int?>[zero,  | one];     |        |
-| var   ints      =  const         | <int?>[0, | null]; |
-| var   zero      =  ints[0]/*!*/; |           |        |
-| var   one       =  zero          | +         | 1;     |
-| var   zeroOne   =  <int>[zero,   | one];     |        |
-Opting out files
-Although we recommend migrating all at once, sometimes that isn’t practical, especially in a large app or package. To opt out a file or directory, click its green checkbox. Later, when you apply changes, each opted out file will be unchanged except for a 2.9 version comment.
-
-For more information about incremental migration, see Unsound null safety.
-
-Applying changes
-When you like all of the changes that the migration tool proposes, click Apply migration. The migration tool deletes the hint markers and saves the migrated code. The tool also updates the minimum SDK constraint in the pubspec, which opts the package into null safety.
-
-The next step is to statically analyze your code. If it’s valid, then test your code. Then, if you’ve published your code on pub.dev, publish a null-safe prerelease.
-
-***** Migrating by hand
-
-If you prefer not to use the migration tool, you can migrate manually.
-
-We recommend that you first migrate leaf libraries — libraries that don’t import other files from the package. Then migrate libraries that directly depend on the leaf libraries. End by migrating the libraries that have the most intra-package dependencies.
-
-For example, say you have a lib/src/util.dart file that imports other (null-safe) packages and core libraries, but that doesn’t have any import '<local_path>' directives. Consider migrating util.dart first, and then migrating simple files that depend only on util.dart. If any libraries have cyclic imports (for example, A imports B which imports C, and C imports A), consider migrating those libraries together.
-
-To migrate a package by hand, follow these steps:
-
-1. Edit the package’s pubspec.yaml file, setting the minimum SDK constraint to 2.12.0:
-   #+BEGIN_SRC yaml
-   environment:
-     sdk: '>=2.12.0 <3.0.0'
-   #+END_SRC
-2. Regenerate the package configuration file:
-
-  ~dart pub get~
- 
-  Running dart pub get with a lower SDK constraint of 2.12.0 sets the default language version of every library in the package to 2.12, opting them all in to null safety.
-3. Open the package in your IDE.
-   You’re likely to see a lot of analysis errors. That’s OK.
-4. Migrate the code of each Dart file, using the analyzer to identify static errors.
-   Eliminate static errors by adding ?, !, required, and late, as needed.
-
-*** 3. Analyze
-Update your packages (using pub get in your IDE or on the command line). Then use your IDE or the command line to perform static analysis on your code:
-
- - ~dart pub get~
- - ~dart analyze~     # or `flutter analyze`
-**** Test
-If your code passes analysis, run tests:
-
- - ~flutter test~       #  *THIS MUST BE ~flutter test~, not ~dart test~, OTHERWISE ERRORS LIKE: *Unable to spawn isolate: lib/src/chart/label_container.dart:6:8: Error: Not found: 'dart:ui'*
-   
-You might need to update tests that expect null values.
-
-If you need to make large changes to your code, then you might need to remigrate it. If so, revert your code changes before using the migration tool again.
-
-**** Publish
-
-We encourage you to publish packages as prereleases as soon as you migrate:
-
-- Set the SDK constraints to the tested beta version.
-- Set the package version to indicate a breaking change - in pubspec.yaml, set the version [[*Change the package version]], e.g.
-  #+begin_src javascript
-    name: flutter_charts
-    version: 0.2.0 # increase major or minor version.
-    description: Charts Library for Flutter, written in Dart with Flutter. Allows to create line chart and bar chart by specifying data as a simple array.
-    author: Milan Zimmermann <milan.zimmermann@gmail.com>
-  #+end_src
--  ~flutter packages pub publish --dry-run~                          - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https:/p;ublish/flutter.io/developing-packages/
-
-  
-***** SDK constraints
-
-Set the lower SDK constraint to 2.12.0:
-
-environment:
-  sdk: '>=2.12.0 <3.0.0'
-With these constraints, packages that are published during null safety beta can still work with the next stable release of the Dart SDK.
-
-***** Change the package version
-In ~pubspec.yaml~, Update the version of the package to indicate a breaking change:
-
-- If your package is already at 1.0.0 or greater, increase the major version. For example, if the previous version is 2.3.2, the new version is 3.0.0.
-
-- If your package hasn’t reached 1.0.0 yet, either increase the minor version or update the version to 1.0.0. For example, if the previous version is 0.3.2, the new version is either 0.4.0 or 1.0.0.
-
-Before you publish a stable null safety version of a package, we strongly recommend following these pubspec rules:
-
-Set the Dart lower SDK constraint to 2.12.0.
-Use stable versions of all direct dependencies.
-
-
-***** Run 
-
-- ~flutter run~
-
-** The following 2 sections describes the steps I did to migrate 2 of my projects:  ~flutter_charts_sample_app~ and  ~flutter_charts~
-
-** DONE ~flutter_charts_sample_app~ - Steps I did to migrate to Unsound null safety
-
-The following are steps I did and notes I took to migrate ~flutter_charts_sample_app~
-
-- cd  ~flutter_charts_sample_app~
-- ~flutter upgrade~ # Upgrade the flutter SDK in the ~$FLUTTER_HOME~ directory - effectively runs ~git fetch; git pull~ in the  ~$FLUTTER_HOME~ - so this does not change anything in project ~flutter_charts_sample_app~
-  - Notes only: 
-    - upgrades flutter
-    - upgrades android and tools 
-    - runs ~flutter doctor~
-    - After this, in ~$FLUTTER_HOME~ , run ~git status~, result: "Your branch is up to date with 'origin/beta'."
-- ~edit pubspec.yaml~ and change environment: sdk: to higher version which uses null satety, do it looks like this:
-  #+begin_example
-  environment:
-    #  sdk: '>=2.0.0 <3.0.0'
-    # opt in to dart null safety
-    sdk: '>=2.12.0-0 <3.0.0'
-  #+end_example
-- Run ~flutter packages get~ - this recreates .dart_tool; only timestamp change - no content change - on pubspeck.lock 
-- Run ~flutter packages upgrade~ - recalculates ~.pubspec.lock~ 
-- After this change, 2 error types:
-  1. Dependent packages not migrated
-      #+begin_example
-        Error: Cannot run with sound null safety, because the following dependencies
-        don't support null safety:
-
-         - package:flutter_charts
-         - package:decimal
-         - package:rational
-      #+end_example
-     - *Solution* - Run the program using ~flutter run --no-sound-null-safety~ ignores this error (dependent packages not migrated), but still insists that main.dart fixes nullable types issues.
-       - Equivalent solution from IIUI: [[file:flutter-notes.org_20210220_003640_5qkXsS.png]] Add this to Run -> Edit Configurations
-  2. Code error and solution
-       #+begin_example
-         lib/main.dart:50:19: Error: The parameter 'key' can't have a value of 'null' because of its type 'Key', but the implicit default value is 'null'.
-          - 'Key' is from 'package:flutter/src/foundation/key.dart' ('../../../../software/flutter/gitclone/flutter/packages/flutter/lib/src/foundation/key.dart').
-         Try adding either an explicit non-'null' default value or the 'required' modifier.
-           MyHomePage({Key key, this.title}) : super(key: key);
-       #+end_example
-     - *Solution* 
-       - Go to this link: https://dart.dev/null-safety/migration-guide
-       - Most of the errors are:  Error: The parameter 'key' can't have a value of 'null' because of its type 'Key':
-         - e.g.  MyHomePage({Key key, this.title}) 
-         - These are solved as follows 
-           - If nullable is desired, add ? to the type: e.g.  ~MyHomePage({Key? key, this.title})~ 
-           - Or, add "required": e.g.  ~MyHomePage({required Key key, this.title})~
-         - *But this solution is manual; there is a tool that will help fixing the code automatically. The points below describe what to do*
-           - Run ~$FLUTTER_DART_SDK_HOME/bin/dart migrate~ from the top directory of the application (where pubspec.yaml is located)
-             #+begin_example
-               mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts_sample_app> $FLUTTER_DART_SDK_HOME/bin/dart migrate
-               Migrating /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_sample_app
-
-               See https://dart.dev/go/null-safety-migration for a migration guide.
-
-               Analyzing project...
-               [----------------------------------------------------------------------------------------------------\]
-               6 analysis issues found:
-                 error • The named parameter 'key' is required, but there's no corresponding argument at lib/main.dart:44:17 • (missing_required_argument)
-                 error • The parameter 'title' can't have a value of 'null' because of its type, but the implicit default value is 'null' at lib/main.dart:50:38 • (missing_default_value_for_parameter)
-                 error • Non-nullable instance field '_lineChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-                 error • Non-nullable instance field '_xContainerLabelLayoutStrategy' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-                 error • Non-nullable instance field '_chartData' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-                 error • Non-nullable instance field '_verticalBarChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-
-               The migration tool didn't start, due to analysis errors.
-
-               The following steps might fix your problem:
-               1. Set the lower SDK constraint (in pubspec.yaml) to a version before 2.12.
-               2. Run `dart pub get`.
-               3. Try running `dart migrate` again.
-             #+end_example
-           - *The migration tool didn't start, due to analysis errors.*
-           - So this did not help. Likely because dependend packages were not migrated???
-           - So go back to manual fixing
-             - See 
-
-** IN-PROGRESS ~flutter_charts~ - Steps I did to migrate to Unsound null safety
-
-The following are steps I did and notes I took to migrate ~flutter_charts~
-
-- cd  ~flutter_charts~
-- ~flutter upgrade~ # Upgrade the flutter SDK in the ~$FLUTTER_HOME~ directory - effectively runs ~git fetch; git pull~ in the  ~$FLUTTER_HOME~ - so this does not change anything in project ~flutter_charts~
-  - Notes only: 
-    - upgrades flutter
-    - upgrades android and tools 
-    - runs ~flutter doctor~
-    - After this, in ~$FLUTTER_HOME~ , run ~git status~, result: "Your branch is up to date with 'origin/beta'."
-- ~edit pubspec.yaml~ and change environment: sdk: to higher version which uses null satety, do it looks like this:
-  #+begin_example yaml
-    dependencies:
-      flutter:
-        sdk:  flutter
-      # change for opt in to dart null safety
-      # decimal: ^0.3.2
-      # vector_math: ^2.0.8
-      decimal: ^1.0.0
-      vector_math: ^2.1.0
-
-    dev_dependencies:
-      test:
-      flutter_test:
-        sdk:  flutter
-
-    # Without the "environment" section, we get message on
-    #   `flutter packages pub publish`:
-    # Older versions of pub don't support the Flutter SDK.
-    # Make sure your SDK constraint excludes old versions:
-
-    environment:
-      # opt in to dart null safety
-      # sdk: '>=2.0.0 <3.0.0'
-      sdk: '>=2.12.0-0 <3.0.0'
-  #+end_example
-- Run ~flutter packages get~ - this recreates .dart_tool; only timestamp change - no content change - on pubspeck.lock 
-- Run ~flutter packages upgrade~ - recalculates ~.pubspec.lock~ - see warning below
-  - Shows issue / warning which can be ignored for now (somehow something must be listing source_span using 1.8.0 rather than 1.8.0:
-    #+begin_example
-      1 package has newer versions incompatible with dependency constraints.
-      Try `flutter pub outdated` for more information.
-
-      Running flutter
-
-      flutter pub outdated
-
-      Showing outdated packages.
-      [*] indicates versions that are not the latest available.
-
-      Package Name  Current  Upgradable  Resolvable  Latest  
-
-      direct dependencies: all up-to-date.
-
-      dev_dependencies: all up-to-date.
-
-      transitive dev_dependencies:
-      source_span   *1.8.0   *1.8.0      *1.8.0      1.8.1   
-      You are already using the newest resolvable versions listed in the 'Resolvable' column.
-      Newer versions, listed in 'Latest', may not be mutually compatible.
-
-    #+end_example
-- After the above change, only code errors
-  #+begin_example
-  lib/main.dart:50:19: Error: The parameter 'key' can't have a value of 'null' because of its type 'Key', but the implicit default value is 'null'.
-   - 'Key' is from 'package:flutter/src/foundation/key.dart' ('../../../../software/flutter/gitclone/flutter/packages/flutter/lib/src/foundation/key.dart').
-  Try adding either an explicit non-'null' default value or the 'required' modifier.
-    MyHomePage({Key key, this.title}) : super(key: key);
-  #+end_example
-  - *Solution 1* 
-    - Go to this link: https://dart.dev/null-safety/migration-guide
-    - Most of the errors are:  Error: The parameter 'key' can't have a value of 'null' because of its type 'Key':
-      - e.g.  MyHomePage({Key key, this.title}) 
-      - These are solved as follows 
-        - If nullable is desired, add ? to the type: e.g.  ~MyHomePage({Key? key, this.title})~ 
-        - Or, add "required": e.g.  ~MyHomePage({required Key key, this.title})~
-      - *But this solution is manual; there is a tool that will help fixing the code automatically. The points below describe what to do*
-        - Run ~$FLUTTER_DART_SDK_HOME/bin/dart migrate~ from the top directory of the application (where pubspec.yaml is located)
-          #+begin_example
-            mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts> $FLUTTER_DART_SDK_HOME/bin/dart migrate
-            Migrating /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts
-
-            See https://dart.dev/go/null-safety-migration for a migration guide.
-
-            Analyzing project...
-            [----------------------------------------------------------------------------------------------------\]
-            6 analysis issues found:
-              error • The named parameter 'key' is required, but there's no corresponding argument at lib/main.dart:44:17 • (missing_required_argument)
-              error • The parameter 'title' can't have a value of 'null' because of its type, but the implicit default value is 'null' at lib/main.dart:50:38 • (missing_default_value_for_parameter)
-              error • Non-nullable instance field '_lineChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-              error • Non-nullable instance field '_xContainerLabelLayoutStrategy' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-              error • Non-nullable instance field '_chartData' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-              error • Non-nullable instance field '_verticalBarChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
-
-            The migration tool didn't start, due to analysis errors.
-
-            The following steps might fix your problem:
-            1. Set the lower SDK constraint (in pubspec.yaml) to a version before 2.12.
-            2. Run `dart pub get`.
-            3. Try running `dart migrate` again.
-          #+end_example
-        - *The migration tool didn't start, due to analysis errors.*
-        - So this did not help. Likely because dependend packages were not migrated???
-      - *So go back to manual problem fixing*
-        - *IIUI -> Problems : types of issues are documented in the numbered list below*
-          1. *change {Key key, } to {Key? key, }*, *add required to title*, e.g.
-             #+begin_src dart
-               MyHomePage({Key? key, required this.title}) : super(key: key);
-             #+end_src
-          2. *Non-nullable instance field '_canvasTiltMatrix' must be initialized: Generally solved by adding ~required Type field~ in the constructor AND moving the field setting to constructor initializer.*
-             - 2.1: If the field is set in a constructor parameter
-               - For example, this constructor:
-                 #+begin_src javascript
-                     LabelContainer({
-                       String label,
-                       double labelMaxWidth,
-                       vector_math.Matrix2 labelTiltMatrix,
-                       vector_math.Matrix2 canvasTiltMatrix,
-                       LabelStyle labelStyle,
-                     }) {
-                       this._label = label;
-                       this._labelMaxWidth = labelMaxWidth;
-                       this._labelTiltMatrix = labelTiltMatrix;
-                       this._canvasTiltMatrix = canvasTiltMatrix;
-                       this._labelStyle = labelStyle;
-
-                         // etc
-                     }
-                 #+end_src
-               - Is changed to:
-                 #+begin_src javascript
-                     LabelContainer({
-                       required String label,
-                       required double labelMaxWidth,
-                       required vector_math.Matrix2 labelTiltMatrix,
-                       required vector_math.Matrix2 canvasTiltMatrix,
-                       required LabelStyle labelStyle,
-                     }) :
-                       this._label = label,
-                       this._labelMaxWidth = labelMaxWidth,
-                       this._labelTiltMatrix = labelTiltMatrix,
-                       this._canvasTiltMatrix = canvasTiltMatrix,
-                       this._labelStyle = labelStyle,
-                     {
-                         // etc
-                     }
-                 #+end_src
-             - 2.2: If the field is a member NOT set in constructor (but set later, e.g. in layout)
-               - 2.2.1. *if the field is a simple member* (number, size, String, boolean), just init on declaration point place to 0, ui.Size.zero, empty String.
-                 #+begin_src javascript
-                     ui.Size _unconstrainedSize = ui.Size.zero;
-                 #+end_src
-                 - ~This is PROBABLY VERY DESIRABLE, as pre-nullable code initialized to 0, 0.0, false, or empty string by default ????!!!!~ todo check thid
-             - 2.2: I am adding the ~late~ keyword, keeping the type non-nullable, for example:
-          3. "A field can only be initialized in it's declaring class"
-             - This error happens on fields which are defined on superclass, which have also been moved to constructor initializer in the subclass. Because initilizer can only access fields in own (declaring) class, which on it's original position in the constructor, super fields can be accessed.
-             - Fix:
-               #+begin_src javascript
-                 LegendItemContainer({
-                   required String label,
-                   required LabelStyle labelStyle,
-                   required ui.Paint indicatorPaint,
-                   required ChartOptions options,
-                   required LayoutExpansion layoutExpansion,
-                   // todo-00-nullable : removed as unused : required ChartContainer parentContainer,
-                 }) :
-                 // We want to only create as much as we can in layout for clarity,
-                 // as a price, need to hold on on label and style from constructor
-                       _label = label,
-                 _labelStyle = labelStyle,
-                 _indicatorPaint = indicatorPaint,
-                 _options = options,
-                 // todo-00-last : start with this error 
-                 // todo-00-nullable : removed, as _layoutExpansion cannot be accessed here : we added this member to super, and call it : _layoutExpansion = layoutExpansion,
-                       super(
-                         layoutExpansion: layoutExpansion,
-                       ) {
-
-               #+end_src
-          4. "The argument type LabelLayoutStrategy? can't be assigned to parameter type LabelLayoutStrategy" (note the ?). This happens when the declared (newly) required parameter is passed an possibly null argument.
-             #+begin_example
-                   xContainer = new XContainer(
-                     parentContainer: this,
-                     layoutExpansion: new LayoutExpansion(
-                         width: chartArea.width - yContainerSize.width,
-                         widthExpansionStyle: ExpansionStyle.TryFill,
-                         height: chartArea.height - legendContainerSize.height,
-                         heightExpansionStyle: ExpansionStyle.GrowDoNotFill),
-                     xContainerLabelLayoutStrategy: xContainerLabelLayoutStrategy != null
-                         ? xContainerLabelLayoutStrategy
-                         : new strategy.DefaultIterativeLabelLayoutStrategy(
-                       options: this.options,
-                     ),
-                   );
-             #+end_example 
-             - // todo-00-nullable : added late
-          5. "A value of type Iterable can't be assigned to a variable of type List". This seems something that previously was lax, now handled strictly. Fix by converting to list.
-                
-** IN-PROGRESS In IIUI -> Project Structure -> SDKs -> Deleted Java 1.8 pointing to "/home/mzimmermann/.jdks/corretto-1.8.0_282"
-
-This appears to have no negative consequences
-
-** IN-PROGRESS Note on versioning - use 1.0.0-nullsafety+1 
- 
-* In dart-experiments on server, resolved upstream branch names (this was a git remote+ssh issue)
-
-the dart-experiments had a git push issue, because
-
-git remote -v
-origin  git@github.com:mzimmerm/dart-experiments.git (fetch)
-origin  git@github.com:mzimmerm/dart-experiments.git (push)
-
-mzimmermann@acer-ryzen-laptop:~/dev/my-projects-source/public-on-github/dart-experiments> git push
-fatal: The current branch master has no upstream branch.
-
-*this was solved by using the correct ssh name for remote: git@github.com-mzimmerm - see .ssh/ssh.config*
-
-git remote remove origin
-git remote add origin git@github.com-mzimmerm:mzimmerm/dart-experiments.git
-git remote -v
-origin  git@github.com-mzimmerm:mzimmerm/dart-experiments.git (fetch)
-origin  git@github.com-mzimmerm:mzimmerm/dart-experiments.git (push)
-git push --set-upstream origin master
- 
-* Where is Flutter and Dart on my system?
-
-- *Flutter directory is the first found on PATH which contains the "flutter" executable* - for me, ~$FLUTTER_HOME/bin~
-
-- InIDEA, this is defined in File -> Settings -> Languages and Frameworks -> Flutter -> Flutter SDK Path
-
-- All flutter commands, e.g. ~flutter upgrade~ places the upgrade there
-
-- Flutter's Dart is then in ~FLUTTER_DART_SDK_HOME=$FLUTTER_HOME/bin/cache/dart-sdk~
-
-- Dart standalone location is defined by ~DART_HOME=/home/mzimmermann/software/dart/dart-sdk~
-
-- For most Flutter operations, we should run dart from DART_SDK_HOME
-
-- =looking for source code of Flutter= shows generally ~packages/flutter/lib/src~ some exports in ~dev/devicelab~
-
-  #+begin_src sh
-  cd ~/software/flutter/gitclone/flutter 
-  find . -name framework.dart
-     # ./dev/devicelab/lib/framework/framework.dart
-     # ./packages/flutter/lib/src/widgets/framework.dart  *source*
-  find . -name chip.dart
-     # ./packages/flutter/lib/src/material/chip.dart      *source*
-  #+end_src
-
-* Flutter collected practical errors
-** Error in running *flutter_charts_sample_app> flutter pub get*: *inconsistent description ">=0.0.20 <0.1.0" for flutter*
-The reason was that during publishing, I used an incorrect pubspec in flutter_charts:
-
-*INCORRECT BELOW - DO NOT VERSION THIS*
-** Error getting packages: flutter pub get "Resolving dependencies: The Flutter SDK is not available."
-
-When a project has flutter: sdk: flutter in its pubspec.yaml, pub get fails with exit code 69, and message "Resolving dependencies... The Flutter SDK is not available."
-
-On my system, the exact message seems looking for pub localhost
-
-#+BEGIN_EXAMPLE
-flutter pub get                             
-Running "flutter packages get" in flutter_charts_common...                                                                           
-Got socket error trying to find package collection at http://localhost:8080.                                                         
-pub get failed (69)                                                                          
-#+END_EXAMPLE
-
-Solution for now: 
-#+BEGIN_SRC sh
-cd /home/mzimmermann/dev/software/flutter/pub_server/
-./run-pub.sh
-#+END_SRC
-
-*there are 2 pub get issues here*
-
-- From idea, when it shows "Pubspec has been edited", clicking "Get dependencies"runs ~pub get~, and then shows error:
-  #+BEGIN_EXAMPLE
-  Working dir: /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
-  $FLUTTER_HOME/bin/cache/dart-sdk/bin/pub get
-  Resolving dependencies...
-  The Flutter SDK is not available.
-  Depended on by:
-  - flutter_charts_common 
-  Process finished with exit code 69
-  #+END_EXAMPLE
-  The suggested solution is to go to command line and run ~flutter pub get~ But this gets a different error
-- From command line  ~flutter pub get~ But this gets a different error
-  #+BEGIN_EXAMPLE
-  flutter pub get                             
-  Running "flutter packages get" in flutter_charts_common...                                                                           
-  Got socket error trying to find package collection at http://localhost:8080.                                                         
-  pub get failed (69)                                                                            
-  #+END_EXAMPLE
-
-
-*the solution for both is to*
-1. =run pub server localhost=
-
-   #+BEGIN_SRC sh
-   cd /home/mzimmermann/dev/software/flutter/pub_server/
-   ./run-pub.sh
-   #+END_SRC
-
-2. Ensure ~pubspec.yaml~ contains
-
-   #+BEGIN_SRC yaml
-   dev_dependencies:
-     test:
-     flutter_test:
-       sdk: flutter
-   #+END_SRC
-
-3. run ~flutter pub get~
-
-   #+BEGIN_SRC sh
-   cd  /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
-   flutter pub get
-   #+END_SRC
-
-4. From *intellij*, synchronize to refresh the packages
-* Package dependencies - any - resolving dependencies the right way, e.g. flutter_charts
-
-- First make the package Dart 2.0 compatible: Read https://www.dartlang.org/dart-2#migrating-packages
-
-  - The core here is to notice and understand the "environment:" in pubspec.yaml
+* Packages and dependencies in Dart and Flutter
+** Package dependencies - any - resolving dependencies the right way, e.g. flutter_charts
 
 - Read Resolving dependencies the right way - read https://medium.com/flutter-community/quick-tip-resolving-dart-package-version-conflicts-faster-than-ever-582d097f655d
 
@@ -1276,71 +596,68 @@ cd /home/mzimmermann/dev/software/flutter/pub_server/
     # Works in Dart 2 only.
     sdk: '>=2.0.0 <3.0.0'
 
-  *this was the cause of my trouble*
-
 - ~flutter upgrade~
 
 - Starting with this pubspec.yaml
 
-#+BEGIN_SRC yaml
-name: flutter_charts
-version: 0.1.8
-description: Charts Library for Flutter, written in Dart with Flutter.
-author: Milan Zimmermann <milan.zimmermann@gmail.com>
-homepage: https://github.com/mzimmerm/flutter_charts/
-publish_to: https://pub.dartlang.org
-documentation: https://pub.dartlang.org/packages/flutter_charts/doc
-
-dependencies:
+  #+BEGIN_SRC yaml
+  name: flutter_charts
+  version: 0.1.8
+  description: Charts Library for Flutter, written in Dart with Flutter.
+  author: Milan Zimmermann <milan.zimmermann@gmail.com>
+  homepage: https://github.com/mzimmerm/flutter_charts/
+  publish_to: https://pub.dartlang.org
+  documentation: https://pub.dartlang.org/packages/flutter_charts/doc
+  
+  dependencies:
+    flutter:
+      sdk:  flutter
+    decimal: ">=0.1.4 <0.2.0"
+    vector_math: ^2.0.0
+  
+  dev_dependencies:
+    test:
+    flutter_test:
+      sdk:  flutter
+  
+  environment:
+    sdk: ">=1.19.0 <3.0.0"
+  
   flutter:
-    sdk:  flutter
-  decimal: ">=0.1.4 <0.2.0"
-  vector_math: ^2.0.0
-
-dev_dependencies:
-  test:
-  flutter_test:
-    sdk:  flutter
-
-environment:
-  sdk: ">=1.19.0 <3.0.0"
-
-flutter:
-  uses-material-design: true
-#+END_SRC
+    uses-material-design: true
+  #+END_SRC
 
 - change all dependencies to "any" like this:
 
-#+BEGIN_SRC yaml
-name: flutter_charts
-version: 0.1.8
-description: Charts Library for Flutter, written in Dart with Flutter.
-author: Milan Zimmermann <milan.zimmermann@gmail.com>
-homepage: https://github.com/mzimmerm/flutter_charts/
-publish_to: https://pub.dartlang.org
-documentation: https://pub.dartlang.org/packages/flutter_charts/doc
-
-dependencies:
+  #+BEGIN_SRC yaml
+  name: flutter_charts
+  version: 0.1.8
+  description: Charts Library for Flutter, written in Dart with Flutter.
+  author: Milan Zimmermann <milan.zimmermann@gmail.com>
+  homepage: https://github.com/mzimmerm/flutter_charts/
+  publish_to: https://pub.dartlang.org
+  documentation: https://pub.dartlang.org/packages/flutter_charts/doc
+  
+  dependencies:
+    flutter:
+      sdk:  flutter
+    decimal: any
+    vector_math: any
+  
+  dev_dependencies:
+    test:
+    flutter_test:
+      sdk:  flutter
+  
+  environment:
+    # Declare it works in Dart 2 only.
+    sdk: '>=2.0.0 <3.0.0'
+  
   flutter:
-    sdk:  flutter
-  decimal: any
-  vector_math: any
+    uses-material-design: true
+  #+END_SRC
 
-dev_dependencies:
-  test:
-  flutter_test:
-    sdk:  flutter
-
-environment:
-  # Declare it works in Dart 2 only.
-  sdk: '>=2.0.0 <3.0.0'
-
-flutter:
-  uses-material-design: true
-
-#+END_SRC
-
-- run ~flutter packages get~ # The pub seems needed, otherwise error
+- run ~flutter pub get~ # The pub seems needed, otherwise error
 
 - Our only dependency is the *decimal package* and the *vector_math package* .
 - Look in ~.packages~ for version:
@@ -1361,100 +678,378 @@ flutter:
   decimal: ^0.3.2
   vector_math: ^2.0.8
 - Just to make sure,ensure both exist on https://pub.dartlang.org/packages/vector_math / decimal
-- run ~flutter packages get~ # ONCE MORE, MAKE SURE NO ERROR 
+- run ~flutter pub get~ # ONCE MORE, MAKE SURE NO ERROR 
 
-* Flutter Bugs
+** ~flutter pub[or packages] create/build/upgrade/clean/run~ - Flutter and Dart cli, creating projects, managing packages and dependencies
+*** ~pub get~ vs. ~flutter pub get~ vs. ~flutter packages pub get~ (legacy) vs. ~flutter packages get~
 
-** Initially, the window size is 0 in this code - see https://github.com/flutter/flutter/issues/11697
+This is completely confusing, but the following seems true:
 
-** ~flutter package get~ picks up lines commented out in pubspec.yaml?
-* Android to Flutter 
-** Type mapping Flutter to Android and iOS
+ 1. ~OBSOLETE pub get~                    # Runs the "pub" command in ~$DART_HOME~ *NOTE: 2021-12-05: command ~pub~ no longer exists*, replaced with ~flutter pub aPubCommand~, see ~flutter pub -h~*
+ 2.          ~flutter          pub get~   # Msg: *Running "flutter pub get" in flutter_charts_sample_app* - Runs the "pub" command in ~$FLUTTER_DART_SDK_HOME~?
+ 3. ~OBSOLETE flutter packages     get~   # Msg: *Running "flutter pub get" in flutter_charts_sample_app* - SO THIS IS THE SAME AS 2. - ~flutter pub get~  - *USE ~flutter pub get~.*
+ 4. ~RARE USE flutter packages pub get~   # Msg: *Resolving dependencies \n decimal 0.3.5 (1.0.0 available) \n Got dependencies!* - SO THIS SEEMS TO BE DOING SOMETHING ELSE THAN 1., 2., 3. .. *Looks like this runs ~dart pub get~* From ~flutter help packages pub~, IT appears this version "passes remaining arguments (get) to Dart's "pub" tool.
 
-The following table shows how Dart values are received on the platform side and vice versa:
-  
-| Dart                       | Android              | iOS                                            |
-|----------------------------+----------------------+------------------------------------------------|
-| null                       | null                 | nil (NSNull when nested)                       |
-| bool                       | java.lang.Boolean    | NSNumber numberWithBool:                       |
-| int                        | java.lang.Integer    | NSNumber numberWithInt:                        |
-| int, if 32 bits not enough | java.lang.Long       | NSNumber numberWithLong:                       |
-| int, if 64 bits not enough | java.math.BigInteger | FlutterStandardBigInteger                      |
-| double                     | java.lang.Double     | NSNumber numberWithDouble:                     |
-| String                     | java.lang.String     | NSString                                       |
-| Uint8List                  | byte[]               | FlutterStandardTypedData typedDataWithBytes:   |
-| Int32List                  | int[]                | FlutterStandardTypedData typedDataWithInt32:   |
-| Int64List                  | long[]               | FlutterStandardTypedData typedDataWithInt64:   |
-| Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
-| List                       | java.util.ArrayList  | NSArray                                        |
-| Map                        | java.util.HashMap    | NSDictionary                                   |
+*** Documentation, see https://flutter.io/upgrading/ . 
 
-* Flutter dev, programming: Notes, Working source code examples
+A few notes from this site:
 
+- We strongly recommend tracking the =beta= branch in the flutter repository.
+- All upgrades commands from command line must be done in one of:
+
+  - directory where my_package is located (e.g. flutter_charts)
+  - or globally, e.g. where Flutter is installed on the system, ~/.pub etc (todo ????? *does global upgrade exist?*)
+
+*** *flutter pub upgrade/get* - dependencies commands
+
+- From the command line
+  - ~cd my_package~ # e.g. flutter_charts
+  - ~flutter channel beta~  # stable, dev - this is same as git checkout beta in $FLUTTER_HOME
+  - ~flutter upgrade~       # Upgrades *both Flutter and Dart SDK inside Flutter* - this is same as git pull in $FLUTTER_HOME
+    - Upgrades both flutter SDK in $FLUTTER_HOME, and the included Dart SDK. How does this know the path to git pull to? Because flutter command MUST be on PATH , in my case $FLUTTER_HOME/bin/flutter - this runs and figures out it's directory and .git location.
+  - ~flutter pub get~
+    - Downloads all dependencies listed in ~.pubspec.lock~ (if exists) - this is the "normal" operation. 
+    - In detail:
+      - if ~.pubspec.lock~ exists, does not change it
+      - else recalculates dependencies from the pubspec.yaml file, writes ~.pubspec.lock~
+      - Downloads all dependencies listed in ~.pubspec.lock~ to ~~/.pub-cache~
+  - ~flutter pub upgrade~ 
+    - Ignores ~.pubspec.lock~, recalculates dependencies from ~pubspec.yaml~,  then creates a new ~.pubspec.lock~ AND new ~.packages~ directory.
+    - After that, proceceeds same as 'get' - Downloads all dependencies listed in ~.pubspec.lock~ 
+    - If you run flutter upgrade and if there are newer versions of packages than the ones your constraints allow, they should be marked in the output, you then need to manually fix the constraint
+    
+- Notes:
+  - *Dependencies* : are packages that end up in ~~/.pub-cache~, in a source form, with a standard package structure from the pub server.
+  - ~pub upgrade~  Dart project upgrade dependency packages
+  - ~flutter upgrade~ - Flutter project upgrade  both the packages and Flutter SDK itself
+  - ~~/.pub-cache~ - local storage of plugins, that are ever needed by all projects (for which ~pub upgrade~ was run)
+  - ~my_package/.packages~ - this file is created every time after ~.pubspec.lock~ is created. Contains same package list. This file just points from package name to ~~/.pub-cache~. Example: one line from .packages: ~analyzer:file:///home/mzimmermann/.pub-cache/hosted/pub.dartlang.org/analyzer-0.31.2-alpha.2/lib/~. See https://flutter.io/using-packages/ . 
+
+  - Everything in the ~~my_package/.packages~ file links to ~/.pub-cache, except:
+    - flutter: file://$FLUTTER_HOME/packages/flutter/lib/ 
+    - flutter_test: file://$FLUTTER_HOME/packages/flutter_test/lib/
+
+- From IntelliJ
+  - (not sure how to switch channel)
+  - Tools -> Flutter -> Flutter upgrade
+
+*** *flutter create/build/clean/run/pub[get/upgrade/publish]* 
+**** All commands Except flutter create below assume we are in existing project: 
+~cd my_package~
+**** ~flutter create --template=package my_package~                    - create a Flutter project that can be used as a library package publishable on *pub* https://pub.dartlang.org/. See https://flutter.io/developing-packages/
+**** ~flutter create my_app~                                           - *what is the difference from the above?*
+**** ~flutter create --org com.example --template=plugin my_package~   - as above, if the library uses plugins (Android, iOS). See https://flutter.io/developing-packages/
+**** ~flutter pub get/upgrade~                                    - See the summarey
+**** ~flutter build clean~                                             - clean build
+**** ~flutter run~                                                     - Runs the package lib/src/main.dart if present
+- ~flutter run --release~ app-debug.apk is bigger than app-release.apk - try with release flag
+- ~flutter run --enable-software-rendering~  it's not a supported config, but it might work for devices without GPU
+**** ~flutter packages pub publish --dry-run~                          - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https://flutter.dev/docs/development/packages-and-plugins/developing-packages#publish
+**** ~flutter packages pub publish~
+
+Without dry-run, flutter generates a link.
+- Open link in browser logged in with the email you want to use, e.g.
+- https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&response_type=code&client_id=818368855108-8grd2eg9tj9f38os6f1urbcvsq399u8n.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A37725&code_challenge=xsdBLNYbb-_WoPwN2bBd6EwxUrPRQcNwXGf0JCuKD9s&code_challenge_method=S256&scope=openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email
+- Select the email
+- This is considered authorization.
+- "Successfully uploaded package."
+*** ~flutter pub global activate dcdg~ - Install an executable dart package globally from ~~/.pub-cache/bin~
+
+- dcdg is a package which generates uml
+- if installed 'globally', it will add executable to ~~/.pub-cache/bin~
+- this dir should be added to path 
+- ~flutter pub global activate dcdg~ # Installs ~/.pub-cache/bin/dcdg executable 
+- ~export PATH="$PATH":"$HOME/.pub-cache/bin"~
+- ~cd my_package~
+- ~flutter pub global run dcdg~ # creates UML, spits results to stdout
+- ~flutter pub global run dcdg -o flutter_charts.plantuml~ # as above, creates a file with plantuml text
+- ~java -jar ~/software/java-based/plantuml/plantuml.1.2017.12.jar flutter_charts.plantuml~ # Generates flutter_charts.png UML
+
+* IN-PROGRESS-CONTINUES *Flutter dev, programming, testing: Notes, examples*
 ** Testing in flutter - see https://flutter.io/testing/ 
 
-*** *Working cleanup and setup for flutter pub and flutter test from command line*
+*** 1. Dart Unit test: Working setup for unit test from command line
 - deleted  ~/.pub-cache
-- ensured /etc/bash.bashrc.local has this commented out: ~export PUB_HOSTED_URL=http://localhost:8080~
+- ensured /etc/bash.bashrc.local has this commented OUT: ~export PUB_HOSTED_URL=http://localhost:8080~
 - cd flutter project to be tested
 - rm pubspec.lock
+- flutter clean
+- flutter pub upgrade
 - flutter pub get
 - flutter test
 - *works!!*
 
-*** Run Test From Idea (not working yet - Run - "Run tests in flutter_charts_common" fails
+*** 2. Dart Integration test
 
-#+BEGIN_EXAMPLE
-$FLUTTER_HOME/bin/cache/dart-sdk/bin/dart --enable-vm-service:42585 $FLUTTER_HOME/bin/cache/dart-sdk/bin/snapshots/pub.dart.snapshot run test -r json /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_common
-Testing started at 9:58 PM ...
-Observatory listening on http://127.0.0.1:42585/
+*** 3. Flutter test
+**** IN-PROGRESS-CONTINUES 3.1 Flutter widget test vs integration test: Command ~flutter test~ vs ~flutter drive~ and package ~flutter_test~ vs. ~integration_test~
 
-Flutter is not available. If this is a Flutter project, make sure to always run
-pub through the "flutter" executable.
+tl;dr: Flutter widget testing vs. Flutter integration testing. There are 2 types of Flutter tests: Widget, and Integration. 
+- *Widget tests*: 
+  - Should be in top level ~test~ directory. 
+  - Do NOT need emulator or device connected - NO UI
+  - Run as ~flutter test test/chart_widget_test.dart~
 
-Process finished with exit code 1
-#+END_EXAMPLE
+- *Integration tests AKA Drive tests*
+  - Should be in top level ~integration_test~ directory. 
+  - NEED  emulator or device connected
+  - Run as ~flutter  drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart~ 
 
-*** Run Test From Command line 
 
-**** ~pub get~ - The dart way - fails :
+More details:
 
-cd ~/dev/my-projects-source/public-on-github/flutter_charts_common
-pub get
-Resolving dependencies... 
-Package flutter_charts_common depends on flutter from unknown source "sdk".
+1. The names *drive* and *driver* in this context refer to a class FlutterDriver, which allows to control an application running in another process. For example, FlutterDriver can control and Android application running inside Android or Android emulator
 
-**** *so run tests the flutter way*
+2. Flutter *Widget tests* vs. *Integration tests AKA Drive tests*
 
-See https://flutter.io/testing/
+   1. ~flutter test~ runs *Widget or page testing, can test and set widget properties, etc*.  Runs the app inside a Flutter process, NOT inside Android or IOS or Web process. */flutter test/ DOES tests Flutter Widgets with NO UI, but can NOT test native functions of the app, such as screenshots, native plugins, etc* 
 
-1. Any testing in Flutter, even if it tests non flutter stuff, needs to have:
+      - Tests should be  in top level ~test~ directory. 
 
-  #+BEGIN_SRC yaml
-  dev_dependencies:
-    flutter_test:
-      sdk: flutter
-  #+END_SRC
-  
-2. In addition, this is a sample code
-  
-  #+BEGIN_SRC dart
-  import 'package:test/test.dart';
-  
-  void main() {
-    test('my first unit test', () {
-      var answer = 42;
-      expect(answer, 42);
-    });
-  }
-  #+END_SRC
+      - Uses package ~import 'package:flutter_test/flutter_test.dart';~
 
-*Then run* ~flutter test~ 
+   2. ~flutter drive~ runs *Integration testing which allows access to native functions such as screenshots via native drive(r)*. 
 
-BUT THIS STILL FAILS - *but see /Working setup ../ which resolves it*
+      - Tests should be in top level ~integration_test~ directory. 
 
-** *Gallery of Widgets - see https://flutter.io/widgets/*
+      - *DOES test native elements such as screenshots, native plugins, etc but can NOT test setting Flutter widgets*.
 
+      - Runs the app inside a separate native process (not in Flutter!), and uses /FlutterDriver/ class to control the natively run app from Flutter.  
+
+      - *integration testing should be called *native_testing* or *driver_based_testing*
+
+      - Uses package ~import 'package:integration_test/integration_test_driver_extended.dart';~.
+
+      - When called: 
+        - The code in package ~test_driver/integration_test.dart~ is called, which instantiates native plugins, such as *gitclone/flutter/integration_test/android/src/main/java/dev/flutter/plugins/integration_test/FlutterDeviceScreenshot.java*.
+
+        - The run internally uses /flutter_driver.dart/ a package which provides API to test Flutter applications that run on real devices and emulators. The tested application runs in a separate process from the test itself. *Flutter drive is Flutter's version of Selenium WebDriver (generic web), Protractor (Angular), Espresso (Android) or Earl Gray (iOS).*
+
+From https://stackoverflow.com/questions/62635696/flutter-widget-vs-flutter-driver
+
+Today I use both flutter_test (launched on real device with integration_test) and real flutter_driver tests:
+
+I write widget tests to check a single widget, or a single page,
+I use flutter driver to write more sophisticated scenarios to test the whole application.
+    
+**** IN-PROGRESS-CONTINUES *3.2. Flutter integration test, showing sample project with tests, including screenshots*
+
+Here we describe how to add integration testing to Dart and Flutter, and specific Flutter testing (*Using flutter_test, which I think means bot integration and unit testing in Flutter*).
+
+1. Create a Project *screenshot* which allows to run Flutter integration test, and take screenshots
+   - cd dev/my-projects-source/public-on-github/
+   - flutter channel master
+   - flutter upgrade
+   - flutter create --template app screenshot
+   - Create intelliJ project for it ~jetbrains-flutter-FLUTTER_SCREENSHOT.desktop~
+2. In the *screenshot* project, install integration_test and flutter_test to the project pubspec.yml.
+   - Follow https://github.com/flutter/flutter/tree/master/packages/integration_test/#integration_test 
+   - ~cd dev/my-projects-source/public-on-github/screenshot~
+   - Install integration tests:
+     1. add packages for testing to pubspec.yaml
+        #+begin_src shell
+          environment:
+            sdk: ">=2.16.0-85.0.dev <3.0.0"
+          dev_dependencies:
+            test:
+            flutter_test:
+              sdk: flutter
+            integration_test:
+              sdk: flutter
+        #+end_src
+     2. ~flutter pub upgrade; flutter pub get~
+3. In the *screenshot* project, add a test driver specifically enabled to create screenshots. Also add the test itself.
+   - Follow https://github.com/flutter/flutter/tree/master/packages/integration_test/#screenshots, details steps extracted from there are below
+     - Add code to ~integration_test~ and ~test_driver~
+       1. run this script to insert driver called /integration_test.dart/
+          #+begin_src bash
+                     mkdir test_driver
+                     echo -ne \
+                         "import 'dart:io';\n" \
+            "import 'package:integration_test/integration_test_driver_extended.dart';\n" \
+            "\n" \
+            "Future<void> main() async {\n" \
+            "await integrationDriver(\n" \
+            "onScreenshot: (String screenshotName, List<int> screenshotBytes) async {\n" \
+            "final File image = File('\$screenshotName.png');\n" \
+            "image.writeAsBytesSync(screenshotBytes);\n" \
+            "// Return false if the screenshot is invalid.\n" \
+            "return true;\n" \
+            "},\n" \
+            ");\n" \
+            "}\n"   > test_driver/integration_test.dart
+
+          #+end_src
+       2. run this script to create one integration test called /screenshot_test.dart/
+          #+begin_src bash
+                     mkdir integration_test
+                     echo -ne \
+            "import 'package:flutter_test/flutter_test.dart';\n" \
+            "import 'package:integration_test/integration_test.dart' show IntegrationTestWidgetsFlutterBinding;\n" \
+            "\n" \
+            "import 'package:screenshot/main.dart' as app;\n" \
+            "\n" \
+            "void main() {\n" \
+            "final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized()\n" \
+            "as IntegrationTestWidgetsFlutterBinding;\n" \
+            "\n" \
+            "testWidgets('screenshot', (WidgetTester tester) async {\n" \
+            "// Build the app.\n" \
+            "app.main();\n" \
+            "\n" \
+            "// This is required prior to taking the screenshot (Android only).\n" \
+            "await binding.convertFlutterSurfaceToImage();\n" \
+            "\n" \
+            "// Trigger a frame.\n" \
+            "await tester.pumpAndSettle();\n" \
+            "await binding.takeScreenshot('screenshot-1');\n" \
+            "});\n" \
+            "}\n"  > integration_test/screenshot_test.dart
+          #+end_src
+   - Also see https://dev.to/mjablecnik/take-screenshot-during-flutter-integration-tests-435k and https://blog.codemagic.io/flutter-automated-screenshot-testing/
+4. Run the test (which creates screenshot) from command line 
+#+BEGIN_SRC shell
+  cd dev/my-projects-source/public-on-github/screenshot
+  flutter emulator --launch "Nexus_6_API_29_2"
+  sleep 20
+  flutter clean 
+  flutter pub get
+  flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart # screenshot-1.png created
+#+END_SRC  - 
+7. *How to run integration tests*. Integration test can run on the device or on the computer.
+  - On Android device (emulated or physical):
+    ~./gradlew app:connectedAndroidTest -Ptarget=`pwd`/../integration_test/foo_test.dart~
+  - On computer without test_driver
+    ~flutter test integration_test/screenshot_test.dart~
+  - On computer with test_driver (needed e.g. for screenshot)
+    ~flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart~  *THIS IS HOW TO GET SCREENSHOT screenshot-1.png*
+
+
+flutter emulator --launch "Nexus_6_API_29_2"
+sleep 20
+flutter clean 
+flutter pub get
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+
+** Gallery of Widgets - see https://flutter.io/widgets/
+
+*** *AnimatedContainer* - Good example of animation; see also Gitter talks.
+*** *AssetBundle* - provides assets
+Things listed in pubspec.yaml under the assets section will get zipped up into the .flx file. things in the .flx file are accessible via the default AssetBundle https://docs.flutter.io/flutter/services/AssetBundle-class.html Also read  files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
+*** *AssetBundleImageProvider. Such as ExactAssetImage*  - get stream from asset like image
+
+If you want to access the image loading layer, you shouldn't use Image Widget.
+Image widget is just an helper to make image accessing easier.
+But you can do it by using an AssetBundleImageProvider. Such as ExactAssetImage.
+Something like :
+          final asset = new ExactAssetImage(assetPath);
+          final stream = asset.resolve(createLocalImageConfiguration(context));
+If you don't want to use Exact AssetImage, you'll have to dig in the Image widget code to look for how they do it.
+*** *GestureDetector* - detect gestures inside CustomPaint
+
+https://stackoverflow.com/questions/45764981/flutter-gesturedetector-is-not-detecting-in-animation
+
+GestureDetector will only work on a widget. it was necessary to put in the child property of CustomPaint a widget such as a Container.
+googleguy:  CustomPaint is a widget, but if you want it to be hit-testable (e.g. so a GestureDetector on its outside will work) you need to implement CustomPainter.hitTest to return true on your custom painter delegate
+
+#+begin_src dart
+   return new Scaffold(
+        body: new Stack(
+            children: <Widget>[
+              new Positioned(
+                  bottom: 0.0,
+                  child: new GestureDetector(
+                    onTap: _up,
+                    child: new AnimatedBuilder(
+                      animation: _animation,
+                      builder: (BuildContext context, Widget child) {
+                      return new Container(
+                        height: _height,
+                        child: new CustomPaint(
+                          painter: new Sky(_width, _height * _animation.value),
+                          child: new Container(
+                            height: _isRotated ? 0.0 : _height * _animation.value,
+                            width: _isRotated ? 0.0 : _width,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              ),
+  // etc
+#+end_src
+*** *Image and Icon - whats the diff??* - todo Examples of icon creation that work
+
+**** *Icon from Image.asset - can be used for my images*  /this works/
+#+begin_src dart
+  Widget icon = new Image.asset(
+    'graphics/icons/top_rank.png',
+    width: 600.0,
+    height: 24.0,
+    fit: BoxFit.cover,
+    )
+#+end_src
+
+***** This assumes:
+****** pubspec.yaml has the following line:
+#+begin_src yaml
+  assets:
+     - graphics/icons/top_rank.png
+#+end_src
+***** top_rank.png is an image in project_root (level of pubspec.yaml)/graphics/icons
+**** *Box from AssetImage* - /could not get to work/
+#+begin_src dart
+  new DecoratedBox(
+    decoration: new BoxDecoration(
+    image:      new DecorationImage(
+      image:      new AssetImage('graphics/icons/top_rank.png'),
+      ),
+    ),
+  ),
+#+end_src
+**** *Icon from Flutter predefinced Icon(Date)* /this works/
+
+#+begin_src dart
+  new Icon(iconData, color: color); // e.g. new Icon(material.Icons.arrow_upward, color: color); 
+#+end_src
+**** *Icon from JSON code blob*
+#+begin_src dart
+  // Grab the blob from JSON:
+
+  var blob = yourJSONMapHere['yourJSONKeyHere'];
+
+  var image = BASE64.decode(blob); // image is a Uint8List
+
+  // Now, use image in a Image.memory
+
+  new Container( child: new Image.memory(image));         
+#+end_src
+*** *InheritedWidget* - Base class for widgets that efficiently propagate information down the tree. I guess this can be used to propagate /globals/, /enums/, /const/ etc
+
+To obtain the nearest instance (*mz up the tree???*) of a particular type of inherited widget from a build context, use ~BuildContext.inheritFromWidgetOfExactType~
+
+/Inherited widgets, when referenced in this way, will cause the consumer to rebuild *mz call build()*  when the inherited widget itself changes state./
+
+https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html
+
+mz - there is some discussion that *InheritedWidget*  - inheritedWidget/stafulWidget above in the tree - removes any need for flux/redux in Flutter, see below
+
+The fact that it's not a global state, but just 'the closest parent' also allows to easily isolate a behaviour for testing
+
+As long as you're isolating the business logic out of your Widgets it's a win for testing 
+
+That's also one of the reason I prefer Flutter over React
+*** *InkWell or GestureDetector* With either a GestureDetector or an Inkwell if you want the Ripple Effect
+
+#+begin_src groovy
+  body: new Center(
+    child: new InkWell(
+      child: new Text('Text pushes: $_counter'),
+      onTap: _incrementCounter,
+    ),
+  ),
+#+end_src
 *** *Layout related*
 
 **** *Container* - *Container is the equivalent of Box model in Web. It does not have any extensions. Use it to add /padding/ /margin/ /border/ to a widget, which will be passed as /child:/ widget* 
@@ -1659,11 +1254,6 @@ Row expands by default, use mainAxisSize to limit it like this:
 new Row(
   mainAxisSize: MainAxisSize.min,
   children: []
-*** *TextField vs Text vs RichText vs. TextSpan vs TextFormField* - document those
-
-**** *TextFormField* - Text-entry field. See  https://github.com/flutter/flutter/blob/master/examples/flutter_gallery/lib/demo/material/text_form_field_demo.dart on how to get user-entered text
-**** *TextField* - ??
-You can listen to onChange events of your TextField and filter the list from that
 *** *Opacity*
 This example shows some Text when the _visible member field is true, and hides it when it is false:
 
@@ -1672,65 +1262,6 @@ new Opacity(
   child: const Text('Now you see me, now you don\'t!'),
 )
 This is more efficient than adding and removing the child widget from the tree on demand.
-*** *Image and Icon - whats the diff??* - todo Examples of icon creation that work
-
-**** *Icon from Image.asset - can be used for my images*  /this works/
-#+begin_src dart
-  Widget icon = new Image.asset(
-    'graphics/icons/top_rank.png',
-    width: 600.0,
-    height: 24.0,
-    fit: BoxFit.cover,
-    )
-#+end_src
-
-***** This assumes:
-****** pubspec.yaml has the following line:
-#+begin_src yaml
-  assets:
-     - graphics/icons/top_rank.png
-#+end_src
-***** top_rank.png is an image in project_root (level of pubspec.yaml)/graphics/icons
-**** *Box from AssetImage* - /could not get to work/
-#+begin_src dart
-  new DecoratedBox(
-    decoration: new BoxDecoration(
-    image:      new DecorationImage(
-      image:      new AssetImage('graphics/icons/top_rank.png'),
-      ),
-    ),
-  ),
-#+end_src
-**** *Icon from Flutter predefinced Icon(Date)* /this works/
-
-#+begin_src dart
-  new Icon(iconData, color: color); // e.g. new Icon(material.Icons.arrow_upward, color: color); 
-#+end_src
-**** *Icon from JSON code blob*
-#+begin_src dart
-  // Grab the blob from JSON:
-
-  var blob = yourJSONMapHere['yourJSONKeyHere'];
-
-  var image = BASE64.decode(blob); // image is a Uint8List
-
-  // Now, use image in a Image.memory
-
-  new Container( child: new Image.memory(image));         
-#+end_src
-*** *Text* - has *TextStyle* (which has: *Color*, *FontSize*, *FontWeight* (normal, bold, lerp), *FontStyle* (normal, italics)
-*** *StreamBuilder / FutureBuilder* - build in ability to register for a stream of events
-Another nice Widget is the StreamBuilder as well -- you can simply pass it a Stream<Data> and a function to build your widget and it will handle all the Stream subscribing / Unsubscribing bizniss. Bonus: There's also a FutureBuilder that works very similarly for Future<Data> / one-off async operation
-*** *InkWell or GestureDetector* With either a GestureDetector or an Inkwell if you want the Ripple Effect
-
-#+begin_src groovy
-  body: new Center(
-    child: new InkWell(
-      child: new Text('Text pushes: $_counter'),
-      onTap: _incrementCounter,
-    ),
-  ),
-#+end_src
 *** *Navigator - like Router in Android* - allow to create, navigate and manage multi page app - see https://docs.flutter.io/flutter/widgets/Navigator-class.html
 
 **** INTRO
@@ -1786,70 +1317,31 @@ How do I pass and get data value between routes ?  well if you want to do it man
 *** *PageView* - sort of like *Navigator* 
 
 **** *TabBarView* is alternative to PageView, has tabs 
-*** *GestureDetector* - detect gestures inside CustomPaint
-
-https://stackoverflow.com/questions/45764981/flutter-gesturedetector-is-not-detecting-in-animation
-
-GestureDetector will only work on a widget. it was necessary to put in the child property of CustomPaint a widget such as a Container.
-googleguy:  CustomPaint is a widget, but if you want it to be hit-testable (e.g. so a GestureDetector on its outside will work) you need to implement CustomPainter.hitTest to return true on your custom painter delegate
-
-#+begin_src dart
-   return new Scaffold(
-        body: new Stack(
-            children: <Widget>[
-              new Positioned(
-                  bottom: 0.0,
-                  child: new GestureDetector(
-                    onTap: _up,
-                    child: new AnimatedBuilder(
-                      animation: _animation,
-                      builder: (BuildContext context, Widget child) {
-                      return new Container(
-                        height: _height,
-                        child: new CustomPaint(
-                          painter: new Sky(_width, _height * _animation.value),
-                          child: new Container(
-                            height: _isRotated ? 0.0 : _height * _animation.value,
-                            width: _isRotated ? 0.0 : _width,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                )
-              ),
-  // etc
-#+end_src
-*** *InheritedWidget* - Base class for widgets that efficiently propagate information down the tree. I guess this can be used to propagate /globals/, /enums/, /const/ etc
-
-To obtain the nearest instance (*mz up the tree???*) of a particular type of inherited widget from a build context, use ~BuildContext.inheritFromWidgetOfExactType~
-
-/Inherited widgets, when referenced in this way, will cause the consumer to rebuild *mz call build()*  when the inherited widget itself changes state./
-
-https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html
-
-mz - there is some discussion that *InheritedWidget*  - inheritedWidget/stafulWidget above in the tree - removes any need for flux/redux in Flutter, see below
-
-The fact that it's not a global state, but just 'the closest parent' also allows to easily isolate a behaviour for testing
-
-As long as you're isolating the business logic out of your Widgets it's a win for testing 
-
-That's also one of the reason I prefer Flutter over React
-*** *AssetBundleImageProvider. Such as ExactAssetImage*  - get stream from asset like image
-
-If you want to access the image loading layer, you shouldn't use Image Widget.
-Image widget is just an helper to make image accessing easier.
-But you can do it by using an AssetBundleImageProvider. Such as ExactAssetImage.
-Something like :
-          final asset = new ExactAssetImage(assetPath);
-          final stream = asset.resolve(createLocalImageConfiguration(context));
-If you don't want to use Exact AssetImage, you'll have to dig in the Image widget code to look for how they do it.
-*** *AssetBundle* - assets etc - things listed in pubspec.yaml under the assets section will get zipped up into the .flx file. things in the .flx file are accessible via the default AssetBundle https://docs.flutter.io/flutter/services/AssetBundle-class.html Also read  files that are assets:  https://flutter.io/assets-and-images/ Specifically: https://flutter.io/assets-and-images/#loading-assets
-*** *AnimatedContainer* - Good example of animation; see also Gitter talks.
 *** *RotatedBox* - new widgets.RotatedBox(quarterTurns:  3, child: text,)
-** *Code, Notes, Design, API, Layout*
+*** *Root Widget* in Flutter - is like Android "Activity" navigate to root using routes
+*** *State* - all about state 
+**** A widget shouldn't visit it's children. It becomes messy. But you can access the state of your parents.
+**** Parent stateful. Child stateless (can access and use state in parent)
+**** Widgets do not have lifecycle, but you can create a StatefulWidget with a corresponding State class. The State class has an initState and dispose methods
+*** *StreamBuilder / FutureBuilder* - build in ability to register for a stream of events
+Another nice Widget is the StreamBuilder as well -- you can simply pass it a Stream<Data> and a function to build your widget and it will handle all the Stream subscribing / Unsubscribing bizniss. Bonus: There's also a FutureBuilder that works very similarly for Future<Data> / one-off async operation
+*** *Text* - has *TextStyle* (which has: *Color*, *FontSize*, *FontWeight* (normal, bold, lerp), *FontStyle* (normal, italics)
+*** *TextField vs Text vs RichText vs. TextSpan vs TextFormField* - document those
 
+**** *TextFormField* - Text-entry field. See  https://github.com/flutter/flutter/blob/master/examples/flutter_gallery/lib/demo/material/text_form_field_demo.dart on how to get user-entered text
+**** *TextField* - ??
+You can listen to onChange events of your TextField and filter the list from that
+*** ~context, stateful, stateless~
+**** ~WidgetBuilder or builder~ - such named class and parameters refer to a simple method or function *(BuildContext context) => Widget child*
+***** ~context~ is the place in the widget three of the Widget where this ~builder~ is called. The implementing function needs the context to tell the child being build, where it belongs to the widget tree.
+***** Note that Flutter declares: ~typedef WidgetBuilder = Widget Function(BuildContext context);~ - a function accepting BuildContext and returning Widget
+**** ~BuildContext context~ - is member on: ~State~ and ~FocusNode~ . So only ~StatefulWidget~ s can use it to build!
 
+~/software/flutter/gitclone/flutter> find . -name "*.dart" -exec grep -iH "get context" {} \;
+./packages/flutter/lib/src/widgets/focus_manager.dart:  BuildContext get context => _context;
+./packages/flutter/lib/src/widgets/framework.dart:  BuildContext get context => _element;
+
+** Code, Notes, Design, API, Layout
 *** *Note: no PathEffect for dashed path* exists in Flutter
 *** *Note: sky_engine* - Lots of important classes are not in package flutter, but in sky_engine. What is it? sky_engine classes include:
 
@@ -1857,7 +1349,8 @@ If you don't want to use Exact AssetImage, you'll have to dig in the Image widge
 **** SceneBuilder
 **** Picture
 *** *Note: ui.Color vs material.Colors*
-*** *Note: Why I cannot find  drawText method in Canvas class*? #1023 https://github.com/flutter/flutter/issues/1023
+*** *Note: Why I cannot find  drawText method in Canvas class*?
+#1023 https://github.com/flutter/flutter/issues/1023
 You should use *TextPainter* to draw text. Using TextPainter will let you take advantage of all the international text support in the engine (e.g., bidirectional text, text shaping, etc).
 *** *Note: CustomPaint/CustomPainter*
 
@@ -2045,103 +1538,12 @@ Because the fixed size limits the chart size. Instead of the fixed size, I'd lik
 *For some detail follow ups, see https://stackoverflow.com/questions/45875334/how-to-achieve-expansion-of-a-widget-in-both-vertical-height-and-horizontal-w .*
 *** *You generally don't set properties with Flutter's functional/reactive APIs*. Instead, wrap your expansion panel list in a custom StatefulWidget. See https://flutter.io/tutorials/interactive/ for an introduction. /What does this mean to "set properties*/
 *** TODO *but if you pop the page, it is destroyed* - /what does is mean to pop the page, in practice?/
-* TODO *todos - immediate, and questions to resolve*
 
-** *Immediate todos*
+** Flutter Core Design Principles
+*** *onPressed* - is generally typed as ~@required VoidCallback onPressed~. Basically a Function with or without parameters, returning void.
+** Flutter - Run Emulators and Apps from command line - see also https://medium.com/flutter-community/flutter-and-the-command-line-a-love-story-a3648ef2411
 
-*** maybe add a blog entry about "Only static members can be accessed in initializers"
-
-This code
-
-~String formattedLabels = labelInfos.map((labelInfo) => labelInfo.formattedLabel).toList();~ 
-
-inside class causes the message.
-
-Solutions:
-- convert to getter
-- move to constructor
-
-** Packages
-
-*** Ask question: Different name of package in lib/my_package.dart and in pubspec.yaml -> name: my_package *can it differ? what does it do?*
-
-/// In `pubspec.yaml`, the presence of the following line
-///         `name: flutter_charts`. This line gives the library
-///         it's name on pub.
-///         todo 0: what if we make the above pubspec ~name: flutter_charts~ different from ~filename lib/flutter_charts.dart~?
-
-* TODO Workflow: Create, debug, publish, test a flutter library package such as flutter_charts
-
-* TODO Share / move Flutter and IntelliJ development environments between systems (e.g. laptop <-> server)
-
-** Source system - run this from an empty directory
-
-cd to HOME DiR (/home/mzimmermann) 
-
-dotAndroid=.android 
-dotIntellij=.IntelliJIdea2019.2
-androidSdk=software/android/sdk-tools-without-studio/
-ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
-
-for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
-dir=$(dirname $pathFile)
-file=$(basename $pathFile)
-
-echo dir=$dir file=$file
-
-if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
-
-if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
-
-echo "Compressing $pathFile"
-
-tar -cvzf ${file}.tar.gz ${dir}
-
-done
-
-
-** Copy files over to target system 
-
-** Target system
-
-cd to HOME DiR (/home/mzimmermann) 
-
-dotAndroid=.android 
-dotIntellij=.IntelliJIdea2019.2
-androidSdk=software/android/sdk-tools-without-studio/
-ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
-
-for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
-dir=$(dirname $pathFile)
-file=$(basename $pathFile)
-
-echo dir=$dir file=$file
-
-if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
-
-# if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
-
-# Remove existing directory before replacing.
-echo "Renaming existing $pathFile"
-
-if [ -e ${pathFile} ]; then 
-mv ${pathFile} ${pathFile}-del
-fi
-
-# Untar the file from the source system.
-tar -cvzf ${file}.tar.gz # has full path to $dir 
-
-done
-
-TEST
-
-** laptop checkout latest of all projects
-
-** laptop refresh software/flutter 
-
-* DONE Flutter - Run Emulators and Apps from command line - see also https://medium.com/flutter-community/flutter-and-the-command-line-a-love-story-a3648ef2411
-
-** List all emulators: ~flutter emulators~
+*** List all emulators: ~flutter emulators~
 
 ~flutter emulators~
 2 available emulators:
@@ -2152,7 +1554,7 @@ Nexus_6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation 
 To run an emulator, run 'flutter emulators --launch <emulator id>'.
 To create a new emulator, run 'flutter emulators --create [--name xyz]'.
 
-** Run 2 Emulators , and an app in each
+*** Run 2 Emulators , and an app in each
 
 Both terminals, ~cd shift2bid/anesthesiologist_app~
 
@@ -2172,28 +1574,24 @@ Both terminals, ~cd shift2bid/anesthesiologist_app~
 
 https://www.gotomeet.me/AirliftGroup
 
-* IN-PROGRESS *FLUTTER - DEV* *Flutter Core Design Principles and UML*
-** *onPressed* - is generally typed as ~@required VoidCallback onPressed~. Basically a Function with or without parameters, returning void.
-** *State* 
-*** A widget shouldn't visit it's children. It becomes messy. But you can access the state of your parents.
-*** Parent stateful. Child stateless (can access and use state in parent)
-*** Widgets do not have lifecycle, but you can create a StatefulWidget with a corresponding State class. The State class has an initState and dispose methods
-** *Navigator - like Router in Android* - allow to create, navigate and manage multi page app - see https://docs.flutter.io/flutter/widgets/Navigator-class.html
-** *An "Activity" equivalent in Android*,  would just be a ~Root Widget in Flutter~, and you navigate to it using routes
-** ~context, stateful, stateless~
-*** ~WidgetBuilder or builder~ - such named class and parameters refer to a simple method or function *(BuildContext context) => Widget child*
-**** ~context~ is the place in the widget three of the Widget where this ~builder~ is called. The implementing function needs the context to tell the child being build, where it belongs to the widget tree.
-**** Note that Flutter declares: ~typedef WidgetBuilder = Widget Function(BuildContext context);~ - a function accepting BuildContext and returning Widget
-*** ~BuildContext context~ - is member on: ~State~ and ~FocusNode~ . So only ~StatefulWidget~ s can use it to build!
+** Flutter and Dart dev and analyze tools
 
-mzimmermann@acer-ryzen-laptop:~/software/flutter/gitclone/flutter> find . -name "*.dart" -exec grep -iH "get context" {} \;
-./packages/flutter/lib/src/widgets/focus_manager.dart:  BuildContext get context => _context;
-./packages/flutter/lib/src/widgets/framework.dart:  BuildContext get context => _element;
-*** 
-* IN-PROGRESS FAQ, Flutter community questions and extracted solutions
+*** ~flutter analyze~
 
-* IN-PROGRESS Flutter Development issues and solutions
+Runs code analyzes using linter. Outputs issues. Controlled by ~analysis_options.yaml~
 
+*** Devtools
+
+See : https://docs.flutter.dev/development/tools/devtools/cli
+
+Run ~flutter pub global activate devtools~ then ~flutter pub global run devtools~, then attach with browser to Serving DevTools at http://127.0.0.1:9100
+
+In Addition, some dev tools such as analyze, format, devices, and MANY OTHERS were moved to the ~flutter~ command, see https://docs.flutter.dev/reference/flutter-cli
+
+**** Obsolete note
+This used to be ~dart_dev tools~ : analyze, format, test, See https://pub.dev/packages/dart_dev . Note: *2021-12-05: This package is not null safe, so unusable for me*
+
+* Issues and solutions
 ** DONE Memory error during build : Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
 
 adb: failed to install /home/mzimmermann/airlift/airlift-projects/shift2bid/boardrunner_app/build/app/outputs/apk/app.apk: Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]
@@ -2238,4 +1636,603 @@ I was using incorrectly
 -     instead of the correct
 - onPressed: _popupCaseFilterDialog,
   
+* IN-PROGRESS-NOW Finishing screenshots
+
+Charts:  Finish integration tests with screenshots compare
+
+- [ ] Add some local - based continuous integration
+- [ ] Rewrite main program in this style:
+- [ ] Generate Dartdoc and review use of links such as
+    *The conversion from enumerates to chart type is in [example1/lib/main.dart] [requestedExampleComboToRun()].*
+- [X] google "markdown link to internal file"
+    [the link to local file](test/my_test.dart)
+
+
+* TODO Add somewhere
+
+* Local runs of pub server, dartdoc, other toold
+
+   =run pub server localhost=
+
+   #+BEGIN_SRC sh
+   cd /home/mzimmermann/dev/software/flutter/pub_server/
+   ./run-pub.sh
+   #+END_SRC
+
+
+* Historical but kept
+** Flutter null safety migration of my packages
+
+This section contains documents and notes on migrating any flutter project to null safety.
+
+There are 2 ways to migrate: sound and unsound, documented online here:
+
+- "Sound null safety" - all dependent packages have been migrated - See https://dart.dev/null-safety
+- "Unsound null safety" - only my package migrates - See https://dart.dev/null-safety/unsound-null-safety
+- Generaral guide to mull safety migration - See https://dart.dev/null-safety/migration-guide
+- More links in bookmarks
+
+
+*** Nutshell notes from this null safety migration link  https://dart.dev/null-safety/migration-guide
+
+Note: Use 'dart' in the commands. Although some 'flutter' versions exist (exception, e.g. dart migrate). If 'flutter' version exist, they seem to function the same if dart path is from flutter/bin/dart
+
+**** 1. Before code Migrate
+***** Switch to the Dart 2.12 release
+
+Check that you have Dart 2.12 or later:
+
+ ~dart --version~
+ 
+***** Check dependency status
+Get the migration state of your package’s dependencies, using the following command:
+
+ ~dart pub outdated --mode=null-safety~
+ 
+If the output says that all the packages support null safety, then you can start migrating.
+
+Otherwise, use the Resolvable column to find null-safe releases, if they exist, then edit your pubspec.yaml to set to the Latest version.
+
+***** Update dependencies
+Before migrating your package’s code, update its dependencies to null-safe versions:
+
+- Run ~dart pub upgrade --null-safety~ to upgrade to the latest versions supporting null safety. Note: *This command changes your pubspec.yaml* file.
+
+- Run ~dart pub get~.
+
+**** 2. Migrate your code
+
+Most of the changes that your code needs to be null safe are easily predictable. For example, if a variable can be null, its *type needs a ? suffix*. A named parameter that shouldn’t be nullable needs to be *marked required*.
+
+You have two options for migrating:
+
+- *Use the migration tool*, which can make most of the easily predictable changes for you.
+- *Migrate your code by hand*.
+
+***** Using the migration tool
+
+The migration tool takes a package of null-unsafe Dart code and converts it to null safety. You can guide the tool’s conversion by adding hint markers to your Dart code.
+
+Before starting the tool, make sure you’re ready:
+
+- Use the latest beta release of the Dart SDK.
+- Use ~dart pub outdated --mode=null-safety~ to make sure that all dependencies are null safe and up-to-date.
+- Start the migration tool by running the dart migrate command in the directory that contains the package’s pubspec.yaml file:
+
+ ~dart migrate~
+ 
+If your package is ready to migrate, then the tool produces a line like the following:
+
+View the migration suggestions by visiting:
+
+  http://127.0.0.1:60278/Users/you/project/mypkg.console-simple?authToken=Xfz0jvpyeMI%3D
+  
+Visit that URL in a Chrome browser to see an interactive UI where you can guide the migration process:
+
+https://dart.dev/null-safety/migration-tool.png
+
+For every variable and type annotation, you can see what nullability the tool infers. For example, in the preceding screenshot, the tool infers that the ints list (previously a list of int) in line 1 is nullable, and thus should be a list of int?.
+
+****** Understanding migration results
+To see the reasons for each change (or non-change), click its line number in the Proposed Edits pane. The reasons appear in the Edit Details pane.
+
+For example, consider the following code, from before null safety:
+
+#+BEGIN_SRC javascript
+var ints = const <int>[0, null];
+var zero = ints[0];
+var one = zero + 1;
+var zeroOne = <int>[zero, one];
+#+END_SRC
+
+The default migration when this code is outside a function (it’s different within a function) is backward compatible but not ideal:
+
+#+BEGIN_SRC 
+var ints = const <int?>[0, null];
+var zero = ints[0];
+var one = zero! + 1;
+var zeroOne = <int?>[zero, one];
+#+END_SRC
+By clicking the line 3 link, you can see the migration tool’s reasons for adding the !. Because you know that zero can’t be null, you can improve the migration result.
+
+****** Improving migration results
+
+When analysis infers the wrong nullability, you can override its proposed edits by inserting temporary hint markers:
+
+When you’ve finished editing your code, click Rerun from sources to pick up your changes.
+
+The following table shows the hint markers that you can use to change the migration tool’s proposed edits.
+
+| Hint marker      | Effect on the migration tool                                                                        |
+| expression /*!*/ | Adds a ! to the migrated code, casting expression to its underlying non-nullable type.              |
+| type /*!*/       | Marks type as non-nullable.                                                                         |
+| /*?*/            | Marks the preceding type as nullable.                                                               |
+| /*late*/         | Marks the variable declaration as late, indicating that it has late initialization.                 |
+| /*late final*/   | Marks the variable declaration as late final, indicating that it has late, one-time initialization. |
+| /*required*/     | Marks the parameter as required.                                                                    |
+
+A single hint can have ripple effects elsewhere in the code. In the example from before, manually adding a /*!*/ marker where zero is assigned its value (on line 2) makes the migration tool infer the type of zero as int instead of int?. This type change can affect code that directly or indirectly uses zero.
+
+var zero = ints[0]/*!*/;
+With the above hint, the migration tool changes its proposed edits, as the following code snippets show. Line 3 no longer has a ! after zero, and in line 4 zeroOne is inferred to be a list of int, not int?.
+
+| First migration                  | hint      |        |
+| var   ints      =  const         | <int?>[0, | null]; |
+| var   zero      =  ints[0];      |           |        |
+| var   one       =  zero!         | +         | 1;     |
+| var   zeroOne   =  <int?>[zero,  | one];     |        |
+| var   ints      =  const         | <int?>[0, | null]; |
+| var   zero      =  ints[0]/*!*/; |           |        |
+| var   one       =  zero          | +         | 1;     |
+| var   zeroOne   =  <int>[zero,   | one];     |        |
+Opting out files
+Although we recommend migrating all at once, sometimes that isn’t practical, especially in a large app or package. To opt out a file or directory, click its green checkbox. Later, when you apply changes, each opted out file will be unchanged except for a 2.9 version comment.
+
+For more information about incremental migration, see Unsound null safety.
+
+Applying changes
+When you like all of the changes that the migration tool proposes, click Apply migration. The migration tool deletes the hint markers and saves the migrated code. The tool also updates the minimum SDK constraint in the pubspec, which opts the package into null safety.
+
+The next step is to statically analyze your code. If it’s valid, then test your code. Then, if you’ve published your code on pub.dev, publish a null-safe prerelease.
+
+****** Migrating by hand
+
+If you prefer not to use the migration tool, you can migrate manually.
+
+We recommend that you first migrate leaf libraries — libraries that don’t import other files from the package. Then migrate libraries that directly depend on the leaf libraries. End by migrating the libraries that have the most intra-package dependencies.
+
+For example, say you have a lib/src/util.dart file that imports other (null-safe) packages and core libraries, but that doesn’t have any import '<local_path>' directives. Consider migrating util.dart first, and then migrating simple files that depend only on util.dart. If any libraries have cyclic imports (for example, A imports B which imports C, and C imports A), consider migrating those libraries together.
+
+To migrate a package by hand, follow these steps:
+
+1. Edit the package’s pubspec.yaml file, setting the minimum SDK constraint to 2.12.0:
+   #+BEGIN_SRC yaml
+   environment:
+     sdk: '>=2.12.0 <3.0.0'
+   #+END_SRC
+2. Regenerate the package configuration file:
+
+  ~dart pub get~
+ 
+  Running dart pub get with a lower SDK constraint of 2.12.0 sets the default language version of every library in the package to 2.12, opting them all in to null safety.
+3. Open the package in your IDE.
+   You’re likely to see a lot of analysis errors. That’s OK.
+4. Migrate the code of each Dart file, using the analyzer to identify static errors.
+   Eliminate static errors by adding ?, !, required, and late, as needed.
+
+**** 3. Analyze
+Update your packages (using pub get in your IDE or on the command line). Then use your IDE or the command line to perform static analysis on your code:
+
+ - ~dart pub get~
+ - ~dart analyze~     # or `flutter analyze`
+***** Test
+If your code passes analysis, run tests:
+
+ - ~flutter test~       #  *THIS MUST BE ~flutter test~, not ~dart test~, OTHERWISE ERRORS LIKE: *Unable to spawn isolate: lib/src/chart/label_container.dart:6:8: Error: Not found: 'dart:ui'*
+   
+You might need to update tests that expect null values.
+
+If you need to make large changes to your code, then you might need to remigrate it. If so, revert your code changes before using the migration tool again.
+
+***** Publish
+
+We encourage you to publish packages as prereleases as soon as you migrate:
+
+- Set the SDK constraints to the tested beta version.
+- Set the package version to indicate a breaking change - in pubspec.yaml, set the version [[*Change the package version]], e.g.
+  #+begin_src javascript
+    name: flutter_charts
+    version: 0.2.0 # increase major or minor version.
+    description: Charts Library for Flutter, written in Dart with Flutter. Allows to create line chart and bar chart by specifying data as a simple array.
+    author: Milan Zimmermann <milan.zimmermann@gmail.com>
+  #+end_src
+-  ~flutter packages pub publish --dry-run~                          - publish the current project (pwd must be in the project dir) on pub - see if everything passes analysis. Remove --dry-run to run. . See https:/p;ublish/flutter.io/developing-packages/
+
+  
+****** SDK constraints
+
+Set the lower SDK constraint to 2.12.0:
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+With these constraints, packages that are published during null safety beta can still work with the next stable release of the Dart SDK.
+
+****** Change the package version
+In ~pubspec.yaml~, Update the version of the package to indicate a breaking change:
+
+- If your package is already at 1.0.0 or greater, increase the major version. For example, if the previous version is 2.3.2, the new version is 3.0.0.
+
+- If your package hasn’t reached 1.0.0 yet, either increase the minor version or update the version to 1.0.0. For example, if the previous version is 0.3.2, the new version is either 0.4.0 or 1.0.0.
+
+Before you publish a stable null safety version of a package, we strongly recommend following these pubspec rules:
+
+Set the Dart lower SDK constraint to 2.12.0.
+Use stable versions of all direct dependencies.
+
+
+****** Run 
+
+- ~flutter run~
+
+*** Steps I did to migrate 2 of my projects:  ~flutter_charts_sample_app~ and  ~flutter_charts~
+
+**** ~flutter_charts_sample_app~ - Steps I did to migrate to Unsound null safety
+
+The following are steps I did and notes I took to migrate ~flutter_charts_sample_app~
+
+- cd  ~flutter_charts_sample_app~
+- ~flutter upgrade~ # Upgrade the flutter SDK in the ~$FLUTTER_HOME~ directory - effectively runs ~git fetch; git pull~ in the  ~$FLUTTER_HOME~ - so this does not change anything in project ~flutter_charts_sample_app~
+  - Notes only: 
+    - upgrades flutter
+    - upgrades android and tools 
+    - runs ~flutter doctor~
+    - After this, in ~$FLUTTER_HOME~ , run ~git status~, result: "Your branch is up to date with 'origin/beta'."
+- ~edit pubspec.yaml~ and change environment: sdk: to higher version which uses null satety, do it looks like this:
+  #+begin_example
+  environment:
+    #  sdk: '>=2.0.0 <3.0.0'
+    # opt in to dart null safety
+    sdk: '>=2.12.0-0 <3.0.0'
+  #+end_example
+- Run ~flutter pub get~ - this recreates .dart_tool; only timestamp change - no content change - on pubspeck.lock 
+- Run ~flutter pub upgrade~ - recalculates ~.pubspec.lock~ 
+- After this change, 2 error types:
+  1. Dependent packages not migrated
+      #+begin_example
+        Error: Cannot run with sound null safety, because the following dependencies
+        don't support null safety:
+
+         - package:flutter_charts
+         - package:decimal
+         - package:rational
+      #+end_example
+     - *Solution* - Run the program using ~flutter run --no-sound-null-safety~ ignores this error (dependent packages not migrated), but still insists that main.dart fixes nullable types issues.
+       - Equivalent solution from IIUI: [[file:flutter-notes.org_20210220_003640_5qkXsS.png]] Add this to Run -> Edit Configurations
+  2. Code error and solution
+       #+begin_example
+         lib/main.dart:50:19: Error: The parameter 'key' can't have a value of 'null' because of its type 'Key', but the implicit default value is 'null'.
+          - 'Key' is from 'package:flutter/src/foundation/key.dart' ('../../../../software/flutter/gitclone/flutter/packages/flutter/lib/src/foundation/key.dart').
+         Try adding either an explicit non-'null' default value or the 'required' modifier.
+           MyHomePage({Key key, this.title}) : super(key: key);
+       #+end_example
+     - *Solution* 
+       - Go to this link: https://dart.dev/null-safety/migration-guide
+       - Most of the errors are:  Error: The parameter 'key' can't have a value of 'null' because of its type 'Key':
+         - e.g.  MyHomePage({Key key, this.title}) 
+         - These are solved as follows 
+           - If nullable is desired, add ? to the type: e.g.  ~MyHomePage({Key? key, this.title})~ 
+           - Or, add "required": e.g.  ~MyHomePage({required Key key, this.title})~
+         - *But this solution is manual; there is a tool that will help fixing the code automatically. The points below describe what to do*
+           - Run ~$FLUTTER_DART_SDK_HOME/bin/dart migrate~ from the top directory of the application (where pubspec.yaml is located)
+             #+begin_example
+               mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts_sample_app> $FLUTTER_DART_SDK_HOME/bin/dart migrate
+               Migrating /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_sample_app
+
+               See https://dart.dev/go/null-safety-migration for a migration guide.
+
+               Analyzing project...
+               [----------------------------------------------------------------------------------------------------\]
+               6 analysis issues found:
+                 error • The named parameter 'key' is required, but there's no corresponding argument at lib/main.dart:44:17 • (missing_required_argument)
+                 error • The parameter 'title' can't have a value of 'null' because of its type, but the implicit default value is 'null' at lib/main.dart:50:38 • (missing_default_value_for_parameter)
+                 error • Non-nullable instance field '_lineChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+                 error • Non-nullable instance field '_xContainerLabelLayoutStrategy' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+                 error • Non-nullable instance field '_chartData' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+                 error • Non-nullable instance field '_verticalBarChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+
+               The migration tool didn't start, due to analysis errors.
+
+               The following steps might fix your problem:
+               1. Set the lower SDK constraint (in pubspec.yaml) to a version before 2.12.
+               2. Run `dart pub get`.
+               3. Try running `dart migrate` again.
+             #+end_example
+           - *The migration tool didn't start, due to analysis errors.*
+           - So this did not help. Likely because dependend packages were not migrated???
+           - So go back to manual fixing
+             - See 
+
+**** ~flutter_charts~ - Steps I did to migrate to Unsound null safety
+
+The following are steps I did and notes I took to migrate ~flutter_charts~
+
+- cd  ~flutter_charts~
+- ~flutter upgrade~ # Upgrade the flutter SDK in the ~$FLUTTER_HOME~ directory - effectively runs ~git fetch; git pull~ in the  ~$FLUTTER_HOME~ - so this does not change anything in project ~flutter_charts~
+  - Notes only: 
+    - upgrades flutter
+    - upgrades android and tools 
+    - runs ~flutter doctor~
+    - After this, in ~$FLUTTER_HOME~ , run ~git status~, result: "Your branch is up to date with 'origin/beta'."
+- ~edit pubspec.yaml~ and change environment: sdk: to higher version which uses null satety, do it looks like this:
+  #+begin_example yaml
+    dependencies:
+      flutter:
+        sdk:  flutter
+      # change for opt in to dart null safety
+      # decimal: ^0.3.2
+      # vector_math: ^2.0.8
+      decimal: ^1.0.0
+      vector_math: ^2.1.0
+
+    dev_dependencies:
+      test:
+      flutter_test:
+        sdk:  flutter
+
+    # Without the "environment" section, we get message on
+    #   `flutter packages pub publish`:
+    # Older versions of pub don't support the Flutter SDK.
+    # Make sure your SDK constraint excludes old versions:
+
+    environment:
+      # opt in to dart null safety
+      # sdk: '>=2.0.0 <3.0.0'
+      sdk: '>=2.12.0-0 <3.0.0'
+  #+end_example
+- Run ~flutter pub get~ - this recreates .dart_tool; only timestamp change - no content change - on pubspeck.lock 
+- Run ~flutter pub upgrade~ - recalculates ~.pubspec.lock~
+- After the above change, only code errors
+  #+begin_example
+  lib/main.dart:50:19: Error: The parameter 'key' can't have a value of 'null' because of its type 'Key', but the implicit default value is 'null'.
+   - 'Key' is from 'package:flutter/src/foundation/key.dart' ('../../../../software/flutter/gitclone/flutter/packages/flutter/lib/src/foundation/key.dart').
+  Try adding either an explicit non-'null' default value or the 'required' modifier.
+    MyHomePage({Key key, this.title}) : super(key: key);
+  #+end_example
+  - *Solution 1* 
+    - Go to this link: https://dart.dev/null-safety/migration-guide
+    - Most of the errors are:  Error: The parameter 'key' can't have a value of 'null' because of its type 'Key':
+      - e.g.  MyHomePage({Key key, this.title}) 
+      - These are solved as follows 
+        - If nullable is desired, add ? to the type: e.g.  ~MyHomePage({Key? key, this.title})~ 
+        - Or, add "required": e.g.  ~MyHomePage({required Key key, this.title})~
+      - *But this solution is manual; there is a tool that will help fixing the code automatically. The points below describe what to do*
+        - Run ~$FLUTTER_DART_SDK_HOME/bin/dart migrate~ from the top directory of the application (where pubspec.yaml is located)
+          #+begin_example
+            mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts> $FLUTTER_DART_SDK_HOME/bin/dart migrate
+            Migrating /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts
+
+            See https://dart.dev/go/null-safety-migration for a migration guide.
+
+            Analyzing project...
+            [----------------------------------------------------------------------------------------------------\]
+            6 analysis issues found:
+              error • The named parameter 'key' is required, but there's no corresponding argument at lib/main.dart:44:17 • (missing_required_argument)
+              error • The parameter 'title' can't have a value of 'null' because of its type, but the implicit default value is 'null' at lib/main.dart:50:38 • (missing_default_value_for_parameter)
+              error • Non-nullable instance field '_lineChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+              error • Non-nullable instance field '_xContainerLabelLayoutStrategy' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+              error • Non-nullable instance field '_chartData' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+              error • Non-nullable instance field '_verticalBarChartOptions' must be initialized at lib/main.dart:78:3 • (not_initialized_non_nullable_instance_field)
+
+            The migration tool didn't start, due to analysis errors.
+
+            The following steps might fix your problem:
+            1. Set the lower SDK constraint (in pubspec.yaml) to a version before 2.12.
+            2. Run `dart pub get`.
+            3. Try running `dart migrate` again.
+          #+end_example
+        - *The migration tool didn't start, due to analysis errors.*
+        - So this did not help. Likely because dependend packages were not migrated???
+      - *So go back to manual problem fixing*
+        - *IIUI -> Problems : types of issues are documented in the numbered list below*
+          1. *change {Key key, } to {Key? key, }*, *add required to title*, e.g.
+             #+begin_src dart
+               MyHomePage({Key? key, required this.title}) : super(key: key);
+             #+end_src
+          2. *Non-nullable instance field '_canvasTiltMatrix' must be initialized: Generally solved by adding ~required Type field~ in the constructor AND moving the field setting to constructor initializer.*
+             - 2.1: If the field is set in a constructor parameter
+               - For example, this constructor:
+                 #+begin_src javascript
+                     LabelContainer({
+                       String label,
+                       double labelMaxWidth,
+                       vector_math.Matrix2 labelTiltMatrix,
+                       vector_math.Matrix2 canvasTiltMatrix,
+                       LabelStyle labelStyle,
+                     }) {
+                       this._label = label;
+                       this._labelMaxWidth = labelMaxWidth;
+                       this._labelTiltMatrix = labelTiltMatrix;
+                       this._canvasTiltMatrix = canvasTiltMatrix;
+                       this._labelStyle = labelStyle;
+
+                         // etc
+                     }
+                 #+end_src
+               - Is changed to:
+                 #+begin_src javascript
+                     LabelContainer({
+                       required String label,
+                       required double labelMaxWidth,
+                       required vector_math.Matrix2 labelTiltMatrix,
+                       required vector_math.Matrix2 canvasTiltMatrix,
+                       required LabelStyle labelStyle,
+                     }) :
+                       this._label = label,
+                       this._labelMaxWidth = labelMaxWidth,
+                       this._labelTiltMatrix = labelTiltMatrix,
+                       this._canvasTiltMatrix = canvasTiltMatrix,
+                       this._labelStyle = labelStyle,
+                     {
+                         // etc
+                     }
+                 #+end_src
+             - 2.2: If the field is a member NOT set in constructor (but set later, e.g. in layout)
+               - 2.2.1. *if the field is a simple member* (number, size, String, boolean), just init on declaration point place to 0, ui.Size.zero, empty String.
+                 #+begin_src javascript
+                     ui.Size _unconstrainedSize = ui.Size.zero;
+                 #+end_src
+                 - ~This is PROBABLY VERY DESIRABLE, as pre-nullable code initialized to 0, 0.0, false, or empty string by default ????!!!!~ todo check thid
+             - 2.2: I am adding the ~late~ keyword, keeping the type non-nullable, for example:
+          3. "A field can only be initialized in it's declaring class"
+             - This error happens on fields which are defined on superclass, which have also been moved to constructor initializer in the subclass. Because initilizer can only access fields in own (declaring) class, which on it's original position in the constructor, super fields can be accessed.
+             - Fix:
+               #+begin_src javascript
+                 LegendItemContainer({
+                   required String label,
+                   required LabelStyle labelStyle,
+                   required ui.Paint indicatorPaint,
+                   required ChartOptions options,
+                   required LayoutExpansion layoutExpansion,
+                   // todo-00-nullable : removed as unused : required ChartContainer parentContainer,
+                 }) :
+                 // We want to only create as much as we can in layout for clarity,
+                 // as a price, need to hold on on label and style from constructor
+                       _label = label,
+                 _labelStyle = labelStyle,
+                 _indicatorPaint = indicatorPaint,
+                 _options = options,
+                 // todo-00-last : start with this error 
+                 // todo-00-nullable : removed, as _layoutExpansion cannot be accessed here : we added this member to super, and call it : _layoutExpansion = layoutExpansion,
+                       super(
+                         layoutExpansion: layoutExpansion,
+                       ) {
+
+               #+end_src
+          4. "The argument type LabelLayoutStrategy? can't be assigned to parameter type LabelLayoutStrategy" (note the ?). This happens when the declared (newly) required parameter is passed an possibly null argument.
+             #+begin_example
+                   xContainer = new XContainer(
+                     parentContainer: this,
+                     layoutExpansion: new LayoutExpansion(
+                         width: chartArea.width - yContainerSize.width,
+                         widthExpansionStyle: ExpansionStyle.TryFill,
+                         height: chartArea.height - legendContainerSize.height,
+                         heightExpansionStyle: ExpansionStyle.GrowDoNotFill),
+                     xContainerLabelLayoutStrategy: xContainerLabelLayoutStrategy != null
+                         ? xContainerLabelLayoutStrategy
+                         : new strategy.DefaultIterativeLabelLayoutStrategy(
+                       options: this.options,
+                     ),
+                   );
+             #+end_example 
+             - // todo-00-nullable : added late
+          5. "A value of type Iterable can't be assigned to a variable of type List". This seems something that previously was lax, now handled strictly. Fix by converting to list.
+                
+**** In IIUI -> Project Structure -> SDKs -> Deleted Java 1.8 pointing to "/home/mzimmermann/.jdks/corretto-1.8.0_282"
+
+This appears to have no negative consequences
+
+**** Note on versioning - use 1.0.0-nullsafety+1  
+** In dart-experiments on server, resolved upstream branch names (this was a git remote+ssh issue)
+
+the dart-experiments had a git push issue, because
+
+git remote -v
+origin  git@github.com:mzimmerm/dart-experiments.git (fetch)
+origin  git@github.com:mzimmerm/dart-experiments.git (push)
+
+mzimmermann@acer-ryzen-laptop:~/dev/my-projects-source/public-on-github/dart-experiments> git push
+fatal: The current branch master has no upstream branch.
+
+*this was solved by using the correct ssh name for remote: git@github.com-mzimmerm - see .ssh/ssh.config*
+
+git remote remove origin
+git remote add origin git@github.com-mzimmerm:mzimmerm/dart-experiments.git
+git remote -v
+origin  git@github.com-mzimmerm:mzimmerm/dart-experiments.git (fetch)
+origin  git@github.com-mzimmerm:mzimmerm/dart-experiments.git (push)
+git push --set-upstream origin master
+ 
+** Android to Flutter 
+*** Type mapping Flutter to Android and iOS
+
+The following table shows how Dart values are received on the platform side and vice versa:
+  
+| Dart                       | Android              | iOS                                            |
+|----------------------------+----------------------+------------------------------------------------|
+| null                       | null                 | nil (NSNull when nested)                       |
+| bool                       | java.lang.Boolean    | NSNumber numberWithBool:                       |
+| int                        | java.lang.Integer    | NSNumber numberWithInt:                        |
+| int, if 32 bits not enough | java.lang.Long       | NSNumber numberWithLong:                       |
+| int, if 64 bits not enough | java.math.BigInteger | FlutterStandardBigInteger                      |
+| double                     | java.lang.Double     | NSNumber numberWithDouble:                     |
+| String                     | java.lang.String     | NSString                                       |
+| Uint8List                  | byte[]               | FlutterStandardTypedData typedDataWithBytes:   |
+| Int32List                  | int[]                | FlutterStandardTypedData typedDataWithInt32:   |
+| Int64List                  | long[]               | FlutterStandardTypedData typedDataWithInt64:   |
+| Float64List                | double[]             | FlutterStandardTypedData typedDataWithFloat64: |
+| List                       | java.util.ArrayList  | NSArray                                        |
+| Map                        | java.util.HashMap    | NSDictionary                                   |
+** Share / move Flutter and IntelliJ development environments between systems (e.g. laptop <-> server)
+*** Source system - run this from an empty directory
+
+cd to HOME DiR (/home/mzimmermann) 
+
+dotAndroid=.android 
+dotIntellij=.IntelliJIdea2019.2
+androidSdk=software/android/sdk-tools-without-studio/
+ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
+
+for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
+dir=$(dirname $pathFile)
+file=$(basename $pathFile)
+
+echo dir=$dir file=$file
+
+if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
+
+if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
+
+echo "Compressing $pathFile"
+
+tar -cvzf ${file}.tar.gz ${dir}
+
+done
+
+*** Copy files over to target system 
+*** Target system
+
+cd to HOME DiR (/home/mzimmermann) 
+
+dotAndroid=.android 
+dotIntellij=.IntelliJIdea2019.2
+androidSdk=software/android/sdk-tools-without-studio/
+ideaIde=software/ides/Intellij-IDEA/EAP/idea-EAP/
+
+for pathFile in $dotAndroid $dotIntellij $androidSdk $ideaIde; do
+dir=$(dirname $pathFile)
+file=$(basename $pathFile)
+
+echo dir=$dir file=$file
+
+if [ ${dir}/${file} != $pathFile ]; echo error in $pathFile, exiting; exit -1; fi
+
+# if [ -e ${dir}/${file} ]; then echo "$pathFile Exists"; else echo PROBLEM with $pathFile;fi
+
+# Remove existing directory before replacing.
+echo "Renaming existing $pathFile"
+
+if [ -e ${pathFile} ]; then 
+mv ${pathFile} ${pathFile}-del
+fi
+
+# Untar the file from the source system.
+tar -cvzf ${file}.tar.gz # has full path to $dir 
+
+done
+
+TEST
+
+*** laptop checkout latest of all projects
+
+*** laptop refresh software/flutter 
 
