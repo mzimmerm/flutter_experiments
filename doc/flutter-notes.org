@@ -364,17 +364,17 @@ Click  ing the |> run in IIUI: [[file:flutter-notes.org_20210218_152217_xTW6nY.p
        
 There   may be errors. This section is how to solve some of the errors I encountered.
        
-*** 6  .1. The solution to the Flutter failing to run main.dart after GRADLE MIGRATION:
+*** 6.1. The solution to the Flutter failing to run main.dart after GRADLE MIGRATION:
        
-- IIU  I flutter clean
-- IIU  I flutter pub get
-- IIU  I flutter pub upgrade
+- IIUI flutter clean
+- IIUI flutter pub upgrade
+- IIUI flutter pub get
        
        
-*"flu  tter run" or "IIUI->run main.dart" is failing with error* 
+*"flutter run" or "IIUI->run main.dart" is failing with error* 
        
-Probl  em is due to build.gradle having obsolete context after flutter changed distibutionUrl of the Gradle Wrapper
-Solut  ion is in the rest of this section
+Problem is due to build.gradle having obsolete context after flutter changed distibutionUrl of the Gradle Wrapper
+Solution is in the rest of this section
        
 ****   6.1.1. General description of build.gradle and gradle-wrapper.propertie
        
@@ -464,116 +464,116 @@ Do th  e above in:
 - [X]   flutter_charts
 -      
        
-*** D  ONE 6.2. Issue when running ~flutter_charts_sample_app~ from |> in IIUI: Error: "environment:  sdk: '>=2.10.0 <3.0.0', then: pub get failed (65; See https://dart.dev/go/sdk-constraint)"
+*** DONE 6.2. Issue when running ~flutter_charts_sample_app~ from |> in IIUI: Error: "environment:  sdk: '>=2.10.0 <3.0.0', then: pub get failed (65; See https://dart.dev/go/sdk-constraint)"
        
-The f  ull error 
+The full error 
+     
+#+begin_example
+Running "flutter pub get" in flutter_charts_sample_app...
+pubspec.yaml has no lower-bound SDK constraint.
+You should edit pubspec.yaml to contain an SDK constraint:
+     
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+     
+See https://dart.dev/go/sdk-constraint
+pub get failed (65; See https://dart.dev/go/sdk-constraint)
+#+end_example
+     
+The solution:
+     
+To flutter_charts_sample_app pubspec.yml, add this section
+     
+#+begin_src yaml
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+#+end_src
        
-#+beg  in_example
-Runni  ng "flutter pub get" in flutter_charts_sample_app...
-pubsp  ec.yaml has no lower-bound SDK constraint.
-You s  hould edit pubspec.yaml to contain an SDK constraint:
+*** DONE 6.3. Warning running ~flutter_charts_sample_app~ regarding application was created using older Android version - *the application still works with this issue but we fix it anyway*
        
-envir  onment:
-  sdk  : '>=2.10.0 <3.0.0'
+Your Flutter application is created using an older version of the Android
+embedding. It's being deprecated in favor of Android embedding v2. Follow the
+steps at
+     
+https://flutter.dev/go/android-project-migration
+     
+to migrate your project.
+     
+     
+Steps I did in ~flutter_charts_sample_app~
+     
+- Go to https://flutter.dev/go/android-project-migration
+- Edit android/app/src/main/java/com/yourcompany/flutterchartssampleapp/MainActivity.java, and delete the lines indicated in the document with "-" and add lines with "+"
+- Edit android/app/src/main/AndroidManifest.xml and
+  - Remove the reference to FlutterApplication from the application tag
+  - Remove all <meta-data> tags with key android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
+  - Add a new <meta-data> tag under <application> (after </activity>
+- Edit android/app/src/main/res/values/styles.xml - hmm, no change here
+     
+Running the app now does not show the message 
        
-See h  ttps://dart.dev/go/sdk-constraint
-pub g  et failed (65; See https://dart.dev/go/sdk-constraint)
-#+end  _example
+*** DONE 6.4 Warning  running ~flutter_charts_sample_app~: Your app isn't using AndroidX - To avoid potential build failures, you can quickly migrate your app by following the steps on https://goo.gl/CP92wY
        
-The s  olution:
-       
-To fl  utter_charts_sample_app pubspec.yml, add this section
-       
-#+beg  in_src yaml
-envir  onment:
-  sdk  : '>=2.10.0 <3.0.0'
-#+end  _src
-       
-*** D  ONE 6.3. Warning running ~flutter_charts_sample_app~ regarding application was created using older Android version - *the application still works with this issue but we fix it anyway*
-       
-Your   Flutter application is created using an older version of the Android
-embed  ding. It's being deprecated in favor of Android embedding v2. Follow the
-steps   at
-       
-https  ://flutter.dev/go/android-project-migration
-       
-to mi  grate your project.
-       
-       
-Steps   I did in ~flutter_charts_sample_app~
-       
-- Go   to https://flutter.dev/go/android-project-migration
-- Edi  t android/app/src/main/java/com/yourcompany/flutterchartssampleapp/MainActivity.java, and delete the lines indicated in the document with "-" and add lines with "+"
-- Edi  t android/app/src/main/AndroidManifest.xml and
-  - R  emove the reference to FlutterApplication from the application tag
-  - R  emove all <meta-data> tags with key android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
-  - A  dd a new <meta-data> tag under <application> (after </activity>
-- Edi  t android/app/src/main/res/values/styles.xml - hmm, no change here
-       
-Runni  ng the app now does not show the message 
-       
-*** D  ONE 6.4 Warning  running ~flutter_charts_sample_app~: Your app isn't using AndroidX - To avoid potential build failures, you can quickly migrate your app by following the steps on https://goo.gl/CP92wY
-       
-*this   appears only fixable using android studio - no - THERE IS A SOLUTION - RECREATE THE APP AND COPY FILES OVER - THIS ALSO FIXES WARNING 6.3*
-       
-Steps  :
-       
-- mv   flutter_charts_sample_app flutter_charts_sample_app_old
-- flu  tter create --template=app flutter_charts_sample_app
-- ope  n the 2 dirs: old on left, new on right
-  - c  opy old to new:
-    -   .git
-    -   NO .idea
-    -   lib (override)
-    -   NO test
-    -   .gitignore
-    -   NO flutter_charts_sample_app_android.iml
-    -   NO flutter_charts_sample_app.iml
-    -   pubspeck.lock
-    -   pubspec.yaml 
-    -   README.md
-  - I  n new dir, run ~flutter pub upgrade~ - this recreates the ~.dart_tool~ directory, recalculates and recreates the ".pubspec.lock" with calculated dependent packages, downloads packages used in the lock to ~~/.pub-cache~ 
-       
-       
-After   the above changes,both 6.3 and 6.4 errors are gone
+*thisappears only fixable using android studio - no - THERE IS A SOLUTION - RECREATE THE APP AND COPY FILES OVER - THIS ALSO FIXES WARNING 6.3*
+     
+Steps
+     
+- mv lutter_charts_sample_app flutter_charts_sample_app_old
+- fluter create --template=app flutter_charts_sample_app
+- ope the 2 dirs: old on left, new on right
+  - cpy old to new:
+    -.git
+    -NO .idea
+    -lib (override)
+    -NO test
+    -.gitignore
+    -NO flutter_charts_sample_app_android.iml
+    -NO flutter_charts_sample_app.iml
+    -pubspeck.lock
+    -pubspec.yaml 
+    -README.md
+  - I new dir, run ~flutter pub upgrade~ - this recreates the ~.dart_tool~ directory, recalculates and recreates the ".pubspec.lock" with calculated dependent packages, downloads packages used in the lock to ~~/.pub-cache~ 
+     
+     
+After the above changes,both 6.3 and 6.4 errors are gone
        
 ** 7.   General note about "Android SDK Build-Tools"
        
-- In   IIUI, this can be found in *File -> Settings -> Android SDK*
-- *Th  is is different, and can have a different version from "Android SDK Platform-Tools"!!!*
-- On   disk, this exists in *$ANDROID_HOME/build-tools/29.0.1*
-  #+b  egin_example
-  ls   -l $ANDROID_HOME/build-tools:
-  tot  al used in directory 12 available 66.5 GiB
-  drw  xr-xr-x  5 mzimmermann users   48 Feb 18 02:38 .
-  drw  xr-xr-x 15 mzimmermann users  252 Feb 19 00:49 ..
-  drw  xr-xr-x  5 mzimmermann users 4096 Aug  5  2019 28.0.3
-  drw  xr-xr-x  5 mzimmermann users 4096 Aug  4  2019 29.0.1
-  drw  xr-xr-x  6 mzimmermann users 4096 Feb 18 02:38 30.0.3
-  #+e  nd_example
-- In   build.gradle (ONLY in the flutter_charts_sample_app/android/app/build.gradle), this is the *buildToolsVersion '29.0.1'*
+- In IIUI, this can be found in *File -> Settings -> Android SDK*
+- *This is different, and can have a different version from "Android SDK Platform-Tools"!!!*
+- On disk, this exists in *$ANDROID_HOME/build-tools/29.0.1*
+  #+begin_example
+  ls -l $ANDROID_HOME/build-tools:
+  total used in directory 12 available 66.5 GiB
+  drwxr-xr-x  5 mzimmermann users   48 Feb 18 02:38 .
+  drwxr-xr-x 15 mzimmermann users  252 Feb 19 00:49 ..
+  drwxr-xr-x  5 mzimmermann users 4096 Aug  5  2019 28.0.3
+  drwxr-xr-x  5 mzimmermann users 4096 Aug  4  2019 29.0.1
+  drwxr-xr-x  6 mzimmermann users 4096 Feb 18 02:38 30.0.3
+  #+end_example
+- In build.gradle (ONLY in the flutter_charts_sample_app/android/app/build.gradle), this is the *buildToolsVersion '29.0.1'*
        
 ** 8.   Where is the virtual device (AVD) named in IIUI "Nexus 6 API 29 2" located and how to address it?
        
-- It   is in */home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/* *!!!!!* 
-- We   can run app from command line as 
-- *cd   test_app; flutter run -d Nexus_6_API_29_2*
-- *cd   test_app; flutter run -d all*
-- *bu  t the device must be running separately - how? e.d. from IIUI Tools->Android->AVD Manager*
-- *To   run an emulator, run ~flutter emulators --launch <emulator id>~ *
-       
-  The   above is probably a shortcut to Android SDK command ~emulator -avd avd_name [ {-option [value]} .. ]~, see https://developer.android.com/studio/run/emulator-commandline
-       
-Ex: ~  flutter emulators~ lists emulators
-       
-2 ava  ilable emulators:
-       
-Nexus  _6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
-Nexus  _6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
-       
-To ru  n an emulator, run ~flutter emulators --launch <emulator id>~, for example: ~flutter emulators --launch 'Nexus_6_API_29_2'~
-       
-To cr  eate a new emulator, run ~flutter emulators --create [--name xyz]~
+- It is in */home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/* *!!!!!* 
+- We can run app from command line as 
+- *cd test_app; flutter run -d Nexus_6_API_29_2*
+- *cd test_app; flutter run -d all*
+- *but the device must be running separately - how? e.d. from IIUI Tools->Android->AVD Manager*
+- *To run an emulator, run ~flutter emulators --launch <emulator id>~ *
+     
+  The above is probably a shortcut to Android SDK command ~emulator -avd avd_name [ {-option [value]} .. ]~, see https://developer.android.com/studio/run/emulator-commandline
+     
+Ex: ~flutter emulators~ lists emulators
+     
+2 available emulators:
+     
+Nexus_6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
+Nexus_6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
+     
+To run an emulator, run ~flutter emulators --launch <emulator id>~, for example: ~flutter emulators --launch 'Nexus_6_API_29_2'~
+     
+To create a new emulator, run ~flutter emulators --create [--name xyz]~
        
 ** 9.   Documented working version of IIUI -> Tools -> Android -> SDK Manager
 
@@ -945,6 +945,19 @@ Something like :
           final asset = new ExactAssetImage(assetPath);
           final stream = asset.resolve(createLocalImageConfiguration(context));
 If you don't want to use Exact AssetImage, you'll have to dig in the Image widget code to look for how they do it.
+*** *Colors in Dart and Flutter - there are three classes related: Color, MaterialColor and Colors* 
+
+1) Color in dart:ui 
+2) MaterialColor in package:flutter/material.dart  (exported from flutter/material/colors.dart) 
+3) Colors in package:flutter/material.dart (also exported from flutter/material/colors.dart)*
+
+
+- they are all *final*, both have *const constructors*
+- Both of the latter extend  the first, ~dart:ui.Color~ 
+  - Colors        static members such as Colors.yellow         are instances of dart:ui.Color 
+  - MaterialColor static members such as MaterialColor.yellow  are instances of dart:ui.Color as well.  MaterialColor.yellow is an array of yellow-type colors; a shade is obtained using ~MaterialColor.yellow.get[50]~ or similar.
+   
+
 *** *GestureDetector* - detect gestures inside CustomPaint
 
 https://stackoverflow.com/questions/45764981/flutter-gesturedetector-is-not-detecting-in-animation
@@ -1348,7 +1361,6 @@ You can listen to onChange events of your TextField and filter the list from tha
 **** Scene
 **** SceneBuilder
 **** Picture
-*** *Note: ui.Color vs material.Colors*
 *** *Note: Why I cannot find  drawText method in Canvas class*?
 #1023 https://github.com/flutter/flutter/issues/1023
 You should use *TextPainter* to draw text. Using TextPainter will let you take advantage of all the international text support in the engine (e.g., bidirectional text, text shaping, etc).
@@ -1541,6 +1553,98 @@ Because the fixed size limits the chart size. Instead of the fixed size, I'd lik
 
 ** Flutter Core Design Principles
 *** *onPressed* - is generally typed as ~@required VoidCallback onPressed~. Basically a Function with or without parameters, returning void.
+** Flutter and Dart Design Patterns
+*** Immutable and const constructor: Cannot make a class immutable if some fields do NOT have const constructor.
+
+*The lesson learned regarding const constructors and immutability*
+- If class is ~immutable~, it should always be able to have ~const constructor~
+- Class can be ~immutable~ IF AND ONLY IF ~all members are final~, and ~for all members' classes a const constructor exists~.
+- Class can have ~const constructor~ ==> can be immutable (but *NOT the other way around*. VerticalBarChartOptions below is a contra-example. Class can be made immutable if the member M that does not have const constructor, by initializing the member M in inializer list :, but 2 things happen as a result: 1) such member M cannot be set by clients. 2) The class cannot have const constructor - )
+- To make non-constantable class immutable, all members without const constructors must be set in initializer list. But then those member values are welded - no client can set them.
+- The initializer list : is for initialization of final fields ?? mostly. 
+- Note: When we say that class in immutable, we mean it is immutable. That implies, if we add @immutable, there would be no error.
+This is an example where I want an immutable class, but some members I need do not have const constructors 
+
+**** Version 1: FINAL - I can make the class @immutable like below setting ~hotspotInnerPaint~ in the : initializer list, but can NOT have const constructor
+
+*But no client will be able to set hotspotInnerPaint to non-Yellow. There is just no way, immutable locks the member to the value set in initializer list : .*
+
+#+begin_src dart
+  import '../options.dart';
+  import 'dart:ui' as ui show Color, Paint;
+
+  import 'package:flutter/material.dart' as material show Colors;
+  import 'package:flutter/foundation.dart' show immutable;
+
+  @immutable
+  class LineChartOptions extends ChartOptions {
+
+    final double hotspotInnerRadius;
+    final ui.Paint hotspotInnerPaint;
+
+    /// Constructor with default values; super values can be set by passing an instantiated [ChartOptions] super.
+    LineChartOptions({
+        // design decision to forward an instance which values will be set on super
+        ChartOptions chartOptions = const ChartOptions(),
+        // Initial value instance on a final field MUST have const constructor here (3.0 is),
+        //   even if I do not need const LineChartOptions constructor!
+        // Clients can set value to non-3.0 by passing to constructor for example "hotspotInnerRadius: 4.0"
+        this.hotspotInnerRadius = 3.0,
+        // This is how to initialize final fields which types do not have const constructor
+        //   - add them to named arguments, and initialize in initializer list.
+        // compile error if try to init to " = ui.Paint()..color" because ui.Paint() has no const constructor.
+        hotspotInnerPaint, 
+    })
+    // Initializer list is the only place to set final fields which types do not have constant constructor.
+    // But it locks the values, clients have no way to set hotspotInnerPaint to non-yellow
+    : hotspotInnerPaint = ui.Paint()..color = material.Colors.yellow,
+    super(
+      isLegendContainerShown: chartOptions.isLegendContainerShown,
+    );
+  }
+#+end_src
+
+**** Version 2 - NOOOO GOOOO - attempt to make LineChartOptions @immutable and clients be able to set hotspotInnerPaint to non-yellow
+
+Core changes:
+1. making ~required hotspotInnerPaint~
+2. removing ~hotspotInnerPaint~ from the : initializer list.
+3. move the responsibility of initializing the  ~required hotspotInnerPaint~ to the client.
+
+Results:
+1. LineChartOptions can be @immutable
+2. LineChartOptions can NOT have const constructor
+   - Reason: there is no way to initialize the hotspotInnerPaint to ui.Paint() because it has no const constructor. There is just no way, except asking creator of ui.Paint() to make it immutable with const constructor.
+3. ~CORE CAVEAT: THIS IS A COMPILE ERROR: All final variables must be initialized, but 'hotspotInnerPaint' isn't~ bASICALLY IT LOOKS THE INITIALIZATION OF FINALS MUST ALL BE DONE IN THE CONSTRUCTOR, CANNOT BE MOVED TO LATER INITIALIZATION BY CLIENTS
+
+#+begin_src dart
+  @immutable
+  class LineChartOptions extends ChartOptions {
+
+    final double hotspotInnerRadius;
+    final ui.Paint hotspotInnerPaint;
+
+    LineChartOptions({
+        ChartOptions chartOptions = const ChartOptions(),
+        this.hotspotInnerRadius = 3.0,
+        required hotspotInnerPaint, // change 1 - added required 
+        })
+        : hotspotInnerPaint, // change 2 - force client to initialize = ui.Paint()..color = material.Colors.yellow,
+          super(
+            isLegendContainerShown: chartOptions.isLegendContainerShown,
+          );
+  }
+#+end_src
+
+
+And the client must initialize the hotspotInnerPaint:
+   
+#+begin_src dart
+  chartOptions = LineChartOptions(
+    chartOptions: const ChartOptions.noLabels(),
+    hotspotInnerPaint: ui.Paint()..color = material.Colors.blue,
+  );
+#+end_src
 ** Flutter - Run Emulators and Apps from command line - see also https://medium.com/flutter-community/flutter-and-the-command-line-a-love-story-a3648ef2411
 
 *** List all emulators: ~flutter emulators~
@@ -1647,7 +1751,6 @@ Charts:  Finish integration tests with screenshots compare
 - [X] google "markdown link to internal file"
     [the link to local file](test/my_test.dart)
 
-
 * TODO Add somewhere
 
 * Local runs of pub server, dartdoc, other toold
@@ -1658,7 +1761,6 @@ Charts:  Finish integration tests with screenshots compare
    cd /home/mzimmermann/dev/software/flutter/pub_server/
    ./run-pub.sh
    #+END_SRC
-
 
 * Historical but kept
 ** Flutter null safety migration of my packages
@@ -2236,3 +2338,72 @@ TEST
 
 *** laptop refresh software/flutter 
 
+
+
+* IN-PROGRESS-NOW Mixins
+
+#+begin_src dart
+void main() {
+  var h = Human();
+  h.walk();
+  
+  var d = Developer();
+  d.walk();
+  d.code();
+
+}
+
+mixin Breathing {
+  void swim() => print("Breathing");
+}
+
+mixin Walking {
+  void walk() => print("Walking");
+}
+
+mixin Coding {
+  void code() => print("coding");
+}
+
+/// This class now has the `walk()` method
+class Human with Walking {}
+
+/// This class now has the `walk()` and `code()` methods
+class Developer with Walking, Coding {}
+#+end_src
+
+* IN-PROGRESS-NOW Immutables why error?
+
+works but fails when const added:
+
+#+begin_src dart
+
+  import 'package:flutter/foundation.dart' show immutable;
+
+void main() {
+ print('Hello ${VerticalBarChartOptions().isLegendContainerShown}');
+}
+
+@immutable
+class ChartOptions {
+  
+  final bool isLegendContainerShown;
+
+  const ChartOptions({
+    this.isLegendContainerShown = false,
+  }) : super();
+}
+
+@immutable
+class VerticalBarChartOptions extends ChartOptions {
+  VerticalBarChartOptions({
+    // forward an instance which values will be set on super
+    ChartOptions chartOptions = const ChartOptions(),
+   })
+       :
+       super(
+        isLegendContainerShown: chartOptions.isLegendContainerShown, // <== If constructor made const, fails with "invalid const value" on isLegendContainerShown. I guess at runtime, there is no way to even run "dot" operator to determine constant
+      );  
+}
+
+#+end_src
