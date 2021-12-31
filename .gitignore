@@ -1,6 +1,7 @@
 .idea
 .emacs.d/
 .packages
+.dart_tool
 packages
 android
 android.iml

@@ -1,34 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart'; // note: external package imp
 
-import 'dart:ui';
-
-main() => runApp(MyApp());
+main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
-      theme: new ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Home Demo Page'),
+      home: const MyHomePage(title: 'Flutter Home Demo Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title; // => Flutter Home Demo Page
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  final String? title; // => Flutter Home Demo Page
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
-
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String dropdownValue = 'One';
 
   @override
@@ -37,33 +33,27 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: DropdownButton<String>(
           value: dropdownValue,
-          icon: Icon(Icons.arrow_downward),
+          icon: const Icon(Icons.arrow_downward),
           iconSize: 24,
           elevation: 16,
-          style: TextStyle(
-              color: Colors.deepPurple
-          ),
+          style: const TextStyle(color: Colors.deepPurple),
           underline: Container(
             height: 2,
             color: Colors.deepPurpleAccent,
           ),
-          onChanged: (String newValue) {
+          onChanged: (String? newValue) {
             setState(() {
-              dropdownValue = newValue;
+              dropdownValue = newValue ?? 'NO DEFAULT';
             });
           },
-          items: <String>['One', 'Two', 'Free', 'Four']
-              .map<DropdownMenuItem<String>>((String value) {
+          items: <String>['One', 'Two', 'Free', 'Four'].map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
             );
-          })
-              .toList(),
+          }).toList(),
         ),
       ),
     );
   }
-
-
 }

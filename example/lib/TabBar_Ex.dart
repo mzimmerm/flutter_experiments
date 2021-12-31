@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 // See https://flutter.dev/docs/cookbook/design/tabs
 void main() {
-  runApp(TabBarApp());
+  runApp(const TabBarApp());
 }
 
 class TabBarApp extends StatelessWidget {
+  const TabBarApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,16 +14,16 @@ class TabBarApp extends StatelessWidget {
         length: 3,
         child: Scaffold(
           appBar: AppBar(
-            bottom: TabBar(
+            bottom: const TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.directions_car)),
                 Tab(icon: Icon(Icons.directions_transit)),
                 Tab(icon: Icon(Icons.directions_bike)),
               ],
             ),
-            title: Text('Tabs Demo'),
+            title: const Text('Tabs Demo'),
           ),
-          body: TabBarView(
+          body: const TabBarView(
             children: [
               Icon(Icons.directions_car),
               Icon(Icons.directions_transit),

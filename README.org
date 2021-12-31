@@ -1,3 +1,0 @@
-* Examples, experiments, and bugs reproduction in Flutter.
-
-* Note: These experiments may contain my code (mostly) but also others' code from places on the internet (stack overflow, chats)

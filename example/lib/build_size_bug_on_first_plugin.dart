@@ -1,41 +1,39 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter/widgets.dart' as widgets; // note: external package imp
 
 import 'dart:ui' as ui;
 
 void main() {
-  runApp(new MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-
+  const MyApp({Key? key}) : super(key: key);
+  @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo Title',
       debugShowCheckedModeBanner: false,
-      theme: new ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   void _stateChanger() {
-    this.setState(() { // on State
-
+    setState(() {
+      // on State
     });
   }
 
@@ -44,34 +42,31 @@ class _MyHomePageState extends State<MyHomePage> {
     final double devicePixelRatio = ui.window.devicePixelRatio;
     final ui.Size windowLogicalSize = ui.window.physicalSize / devicePixelRatio;
     // Let us give the Painter full width and half of height.
-    final ui.Size logicalSize =
-    new Size(windowLogicalSize.width, windowLogicalSize.height / 2);
+    final ui.Size logicalSize = Size(windowLogicalSize.width, windowLogicalSize.height / 2);
 
-    print(" ### Size: ui.window.physicalSize=${ui.window.physicalSize}, "
-        "windowLogicalSize=$windowLogicalSize,"
-        "logicalSize=$logicalSize");
+    // print(" ### Size: ui.window.physicalSize=${ui.window.physicalSize}, "
+    //     "windowLogicalSize=$windowLogicalSize,"
+    //     "logicalSize=$logicalSize");
 
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
       ),
-      body: new Center(
-        child: new Column(
+      body: Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
-            new Text(
+            Text(
               'size=$logicalSize - this prints (0,0) in first run after device connect.',
             ),
           ],
         ),
       ),
-      floatingActionButton: new FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: _stateChanger,
         tooltip: 'Just force a refresh',
-        child: new Icon(Icons.add),
+        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.    );
     );
-
   }
 }

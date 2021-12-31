@@ -4,23 +4,23 @@ import './tabbed_app_more_files/FirstPage.dart';
 import './tabbed_app_more_files/SecondPage.dart';
 import './tabbed_app_more_files/ThirdPage.dart';
 
-main() => runApp(MaterialApp(
+main() => runApp(const MaterialApp(
       home: AnestAppTabbedHome(),
     ));
 
 class AnestAppTabbedHome extends StatefulWidget {
+  const AnestAppTabbedHome({Key? key}) : super(key: key);
   @override
   State<AnestAppTabbedHome> createState() => _AnestAppTabbedHomeState();
 }
 
-class _AnestAppTabbedHomeState extends State<AnestAppTabbedHome>
-    with SingleTickerProviderStateMixin {
+class _AnestAppTabbedHomeState extends State<AnestAppTabbedHome> with SingleTickerProviderStateMixin {
   // Note: Controller is the state!
   // Note: The SingleTickerProviderStateMixin is related to state ability
   //       to show animations. Used in the vsync:
   // Note: So everything on the AnestAppTabbedHome is Animated,
   //       just by mixing State with SingleTickerProviderStateMixin
-  TabController controller;
+  TabController? controller;
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _AnestAppTabbedHomeState extends State<AnestAppTabbedHome>
 
   @override
   void dispose() {
-    controller.dispose();
+    controller?.dispose();
     super.dispose();
   }
 
@@ -45,10 +45,10 @@ class _AnestAppTabbedHomeState extends State<AnestAppTabbedHome>
     //       "Scaffold ->  appBar: AppBar -> bottom: -> TabBar"
     return Scaffold(
         appBar: AppBar(
-          title: Title(color: Colors.green, child: Text("Hello tabbed world")),
+          title: Title(color: Colors.green, child: const Text('Hello tabbed world')),
           bottom: TabBar(
             controller: controller,
-            tabs: <Tab>[
+            tabs: const <Tab>[
               Tab(icon: Icon(Icons.arrow_forward)),
               Tab(icon: Icon(Icons.arrow_downward)),
               Tab(icon: Icon(Icons.arrow_back)),
@@ -58,16 +58,19 @@ class _AnestAppTabbedHomeState extends State<AnestAppTabbedHome>
         // Note: Purpose of bottomNavigationBar is to duplicate
         //       tab navigation on top.
         //       todo : I am not sure how it is controlled without controller.
-        bottomNavigationBar: new Material(
+        bottomNavigationBar: Material(
             color: Colors.deepOrange,
-            child: new TabBar(controller: controller, tabs: <Tab>[
-              new Tab(icon: new Icon(Icons.arrow_forward)),
-              new Tab(icon: new Icon(Icons.arrow_downward)),
-              new Tab(icon: new Icon(Icons.arrow_back))
-            ])),
+            child: TabBar(
+              controller: controller,
+              tabs: const <Tab>[
+                Tab(icon: Icon(Icons.arrow_forward)),
+                Tab(icon: Icon(Icons.arrow_downward)),
+                Tab(icon: Icon(Icons.arrow_back))
+              ],
+            )),
         body: TabBarView(
           controller: controller,
-          children: <Widget>[
+          children: const <Widget>[
             FirstPage(),
             SecondPage(),
             ThirdPage(),
