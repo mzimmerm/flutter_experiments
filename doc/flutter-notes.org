@@ -156,8 +156,16 @@ export PATH=${PATH}:$FLUTTER_HOME/bin
 export FLUTTER_DART_SDK_HOME=$FLUTTER_HOME/bin/cache/dart-sdk
 
 # Android Studio: need to set location of sdk. Will be installed in Step 2.
-export ANDROID_HOME=/home/mzimmermann/software/android/sdk-tools-without-studio
-export ANDROID_SDK_ROOT=$ANDROID_HOME
+
+#+BEGIN_SRC sh
+  export ANDROID_HOME=/home/mzimmermann/software/android/sdk-created-by-intellij-settings
+  export ANDROID_SDK_ROOT=$ANDROID_HOME
+
+  export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin # Added 2022-10-16 to reach CORRECT sdkmanager and other cmdline-tools (avdmanager, apkanalyzer etc). MUST REACH THIS FIRST
+  export PATH=$PATH:$ANDROID_HOME/emulator
+  export PATH=$PATH:$ANDROID_HOME/platform-tools
+  export PATH=$PATH:$ANDROID_HOME/tools/bin # Added 2022-10-16 WRONG sdkmanager and other tools fail with Java 11, exception NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema. Still append this, but reach after cmdline-tools as there are a few tools here not in cmdline-tools.
+#+END_SRC
 
 ** 0.1. Where is Flutter and Dart on my system?
 
@@ -184,6 +192,34 @@ export ANDROID_SDK_ROOT=$ANDROID_HOME
      # ./packages/flutter/lib/src/material/chip.dart      *source*
   #+end_src
 
+
+** 0.3 What OS packages are required for Flutter?
+
+Problem: `flutter upgrade` reports in flutter doctor:
+
+[✗] Linux toolchain - develop for Linux desktop
+   ✗ clang++ is required for Linux development.
+     It is likely available from your distribution (e.g.: apt install clang), or can be downloaded fro
+m https://releases.llvm.org/
+   ✗ CMake is required for Linux development.
+     It is likely available from your distribution (e.g.: apt install cmake), or can be downloaded fro
+m https://cmake.org/download/
+   ✗ ninja is required for Linux development.
+     It is likely available from your distribution (e.g.: apt install ninja-build), or can be download
+ed from https://github.com/ninja-build/ninja/releases
+   ✗ GTK 3.0 development libraries are required for Linux development.
+     They are likely available from your distribution (e.g.: apt install libgtk-3-dev)
+
+
+So installed the following packages:
+
+zypper info clang; zypper in clang
+zypper info cmake; zypper in cmake
+zypper info ninja; zypper in ninja
+zypper info gtk3-devel; zypper in gtk3-devel; 
+
+
+  
 ** 0.2. IIUI - My Configuration: *If issues, always ensure Android SDK and Dart SDK are set in IIUI*
 
 Follow these steps:
@@ -275,81 +311,48 @@ This install is the same as getting a git branch beta from Flutter!
     - Select SDK Tools from the top menu
     - Check Android SDK Command-line tools and click 'apply'.
 
-** 2.   Intall Android sdk-tools
+** 2.   Using android-studio as sdk-tools is changed to commandline-tools
+Note: As of 2022, *sdk-tools* were renamed to *commandline-tools*, see https://developer.android.com/studio/releases/sdk-tools
 
-- download https://developer.android.com/studio/#downloads sdk-tools-linux-yyyyyy.zip
-- extract to ANDROID_HOME=/home/mzimmermann/software/android/sdk-tools-without-studio
-- so now we have the tools in $ANDROID_HOME/tools/
-- Make sure /etc/profile.local has: 
-  #+BEGIN_SRC sh
-  export ANDROID_HOME=/home/mzimmermann/software/android/sdk-tools-without-studio
-  export ANDROID_SDK_ROOT=$ANDROID_HOME
-  #+END_SRC
-- Reboot
-- 
+This SDK Tools package is deprecated and no longer receiving updates. Instead, use the *new Android SDK Command-Line tools package*. For updates on the new *cmdline-tools package*, see the Android SDK Command-Line Tools release notes.
 
-** 3.   Finish installing Android sdk-tools from IIUI
-       
-We will create AVD from IIUI, NOT Android studio
-- Start IIUI e.g. by running *jetbrains-flutter-flutter_charts_sample_app-github.desktop*
-- In IIUI -> File -> Settings -> "Android SDK"
-  - This will ask to set directory for Android SDK 
-  - It does say the android/sdk-tools-without-studio is invalid or some such .. but ignore and continue
-  - This process will add to *sdk-tools-without-studio* other directories beside *tools*, 
-  - In at the end it should say "Android SDK is up to date."
-  - Click Finish
+*but cmdline-tools seems completely different from the old sdk-tools, so I instaled the full android-studio*:
+
+- Download *android-studio-2021.3.1.17-linux.tar.gz* from  https://developer.android.com/studio#cmdline-tools
+- tar xvzf android-studio-2021.3.1.17-linux.tar.gz
+- created dir android-studio
+- set ANDROID_HOME, see [[*0.   Some environment I am setting ahead of time in /etc/profile.local][environment variables heading]]
+- start Jetbrains
+- IIUI -> File -> Settings -> Appearance & Behavios -> System Settings  -> "Android SDK"
+- [[file:img/flutter-notes.org-android-sdk-1.png]]
+- *IMPORTANT: Make sure on the SDK Tools tab to install latest Android SDK Command-line Tools*. This ensures that ~$ANDROID_HOME/cmdline-tools~ is created and downloaded
+  [[file:img/flutter-notes.org-android-sdk-1.1-cmdline-tools.png]]
+- Edit and set 'Android SDK Location' to ~/home/mzimmermann/software/android/sdk-created-by-intellij-settings/~ 
+  - Note: Normally, IIUI tries to make this ~Android/sdk
+  - [[file:img/flutter-notes.org-android-sdk-2-select-what-to-do.png]]
+- Next (lists current settings, uses Android ASK Platform 33
+  - [[file:img/flutter-notes.org-android-sdk-3-downloaded-components.png]]
+- click Next
+- Accept license
+- *Download starts to ~software/android/sdk-created-by-intellij-settings/~. The contents seems to be the same as the previous ~software/android/sdk-tools-without-studio~!!*
+- Click Finish
+- Click OK to finish installing Android SDK
   - The *sdk-tools-without-studio* should now contain
     #+BEGIN_SRC sh
-    ls -l /home/mzimmermann/software/android/sdk-tools-without-studio/tools/
+    ls -l /home/mzimmermann/software/android/sdk-created-by-intellij-settings
     #+END_SRC
-     
-    #+RESULTS:
-    | total      | 1868 |             |       |        |     |    |      |                   |
-    | -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 | 2017 | android           |
-    | drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 | 2017 | bin               |
-    | -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 | 2017 | emulator          |
-    | -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 | 2017 | emulator-check    |
-    | drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 | 2017 | lib               |
-    | -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 | 2017 | mksdcard          |
-    | -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 | 2017 | monitor           |
-    | -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 | 2017 | NOTICE.txt        |
-    | -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 2019 | package.xml       |
-    | drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 | 2017 | proguard          |
-    | -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 | 2017 | source.properties |
-    | drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 | 2017 | support           |
-     
-    #+RESULTS-finished:
-    | total      | 1864 |             |       |        |     |    |       |                   |
-    | -rwxr--r-- |    1 | mzimmermann | users |   4853 | Sep | 13 |  2017 | android           |
-    | drwxr-xr-x |    2 | mzimmermann | users |    166 | Sep | 13 |  2017 | bin               |
-    | -rwxr--r-- |    1 | mzimmermann | users | 625840 | Sep | 13 |  2017 | emulator          |
-    | -rwxr--r-- |    1 | mzimmermann | users | 410592 | Sep | 13 |  2017 | emulator-check    |
-    | drwxr-xr-x |    6 | mzimmermann | users |   4096 | Sep | 13 |  2017 | lib               |
-    | -rwxr--r-- |    1 | mzimmermann | users |  12191 | Sep | 13 |  2017 | mksdcard          |
-    | -rwxr--r-- |    1 | mzimmermann | users |   1257 | Sep | 13 |  2017 | monitor           |
-    | -rw-r--r-- |    1 | mzimmermann | users | 829319 | Sep | 13 |  2017 | NOTICE.txt        |
-    | -rw-r--r-- |    1 | mzimmermann | users |    919 | Aug |  4 | 21:55 | package.xml       |
-    | drwxr-xr-x |    7 | mzimmermann | users |    194 | Sep | 13 |  2017 | proguard          |
-    | -rw-r--r-- |    1 | mzimmermann | users |    138 | Sep | 13 |  2017 | source.properties |
-    | drwxr-xr-x |    2 | mzimmermann | users |    189 | Sep | 13 |  2017 | support           |
-- In IIUI  File -> Settings -> "Android SDK" -> "SDK Tools"
-  - "Android SDK Build-Tools" should have 29.0.1 installed!
-  - If not, click on "Edit" and should see, under "SDK Components Setup", something like
-    - Android SDK (50.7 MB)
-    - Android SDK Platform
-    - Android SDK Location: /home/mzimmermann/software/android/sdk-tools-without-studio
-      [[file:flutter-notes.org_20210218_023736_P1CMB1.png]]
-    - Click Next, Next again.
-    - Click Finish
-    - After this, the IIUI File -> Settings -> "Android SDK" shold look like this:
-      [[file:flutter-notes.org_20210218_023913_Z5ZQWy.png]]
-    - Select "Android 10.0+ (R)
-    - Click "Apply"
-    - Click :OK".
-    - *This should finish installing the Android SDK*
-- *Now restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
-       
-** 4. Create AVD (Android Virtual Device Manager)
+
+    #+RESULTS-IS:
+    | total      | 4 |             |       |      |     |    |       |                |
+    | drwxr-xr-x | 3 | mzimmermann | users |   20 | Oct | 16 | 14:05 | build-tools    |
+    | drwxr-xr-x | 7 | mzimmermann | users | 4096 | Oct | 16 | 14:07 | emulator       |
+    | drwxr-xr-x | 2 | mzimmermann | users |   33 | Oct | 16 | 14:05 | licenses       |
+    | drwxr-xr-x | 3 | mzimmermann | users |   16 | Oct | 16 | 14:05 | patcher        |
+    | drwxr-xr-x | 3 | mzimmermann | users |   24 | Oct | 16 | 14:05 | platforms      |
+    | drwxr-xr-x | 3 | mzimmermann | users |  287 | Oct | 16 | 14:07 | platform-tools |
+    | drwxr-xr-x | 3 | mzimmermann | users |   24 | Oct | 16 | 14:05 | sources        |
+  
+** 4.   Created AVD Nexus_6_API_33 (Android Virtual Device Manager)
        
 - *Now restart the IIUI jetbrains-flutter-flutter_charts_sample_app-github.desktop*
 - Note: IIUI now contains menu item "Tools -> Android -> AVD Manager"
@@ -359,42 +362,114 @@ We will create AVD from IIUI, NOT Android studio
     - BIOS (F2 on startup)
     - Advanced Menu -> CPU Configuration -> SVM Mode - set to Enabled
 - Now we can create the Android Virtual Device
-- Tools -> Android -> AVD Manager. You may already see a device. If not, do the following:
-  - +Create Virtual Device
-  - selecte Nexus 6
-  - "a system image must be selected to continue"
-  - x86 Images: Select "API 29 Download | API Level=29 | ABI=x86-64 | Target=Android 29 (Google APIs)"
+- Tools -> Android -> Device Manager (this is AVD). You may already see a device. If not, do the following:
+  - Click Create Device (Make sure you on Virtual tab)
+  - select Nexus 6
+  - Next
+  - Select System Image
+  - [[file:img/flutter-notes.org-iiui-create-device.png]]
+  - Recommended tab: Selected API 33 (latest)
+  - Info: "a system image must be selected to continue"
+  - NO: x86 Images: Select "API 29 Download | API Level=29 | ABI=x86-64 | Target=Android 29 (Google APIs)"
+  - Click on the "Download" link beside API 33 x86_64
   - *accept all Licence Agreements!!s*
     - Android Emulator 
     - Google APIs Intel x86 Atom_64 System Image
-  - The log:
+  - 
+  - The log: Downloading 1.4 Gb to SDK Path ~/home/mzimmermann/software/android/sdk-created-by-intellij-settings/~
     #+BEGIN_EXAMPLE
-    Packages to install: 
-    - Android Emulator (emulator)
-    - Google APIs Intel x86 Atom_64 System Image (system-images;android-29;google_apis;x86_64)
-     
-    Preparing "Install Android Emulator (revision: 29.0.11)".
-    Downloading https://dl.google.com/android/repository/emulator-linux-5598178.zip
-    "Install Android Emulator (revision: 29.0.11)" ready.
-    Preparing "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)".
-    Downloading https://dl.google.com/android/repository/sys-img/google_apis/x86_64-29_r06-linux.zip
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" ready.
-    Installing Android Emulator in /home/mzimmermann/software/android/sdk-tools-without-studio/emulator
-    "Install Android Emulator (revision: 29.0.11)" complete.
-    "Install Android Emulator (revision: 29.0.11)" finished.
-    Installing Google APIs Intel x86 Atom_64 System Image in /home/mzimmermann/software/android/sdk-tools-without-studio/system-images/android-29/google_apis/x86_64
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" complete.
-    "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" finished.    
+      Packages to install: - Google APIs Intel x86 Atom_64 System Image (system-images;android-33;google_apis;x86_64)
+
+
+      Preparing "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)".
+      Downloading https://dl.google.com/android/repository/sys-img/google_apis/x86_64-33_r06.zip
+      "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" ready.
+      Installing Google APIs Intel x86 Atom_64 System Image in /home/mzimmermann/software/android/sdk-created-by-intellij-settings/system-images/android-33/google_apis/x86_64
+      "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" complete.
+      "Install Google APIs Intel x86 Atom_64 System Image (revision: 6)" finished.        
     #+END_EXAMPLE
-  - *So now we have a new AVD emulator named /home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/*
+  - Next
+  - Android Virtual Device screen
+    [[file:img/flutter-notes.org-iiui-create-device-last-configure-avd.png]]
+  - Finish
+  - *So now we have a new AVD emulator named /home/mzimmermann/.android/avd/Nexus_6_API_33.avd/*
   - *There were some crashes starting the device. Went away when edited the device to:*
-  - GRaphics: Software - GLES 2.0
-  - Boot Option: Cold Boot
+  - GRaphics: Software - GLES 2.0!
+  - Startup: Portrait
+  - Advanced Settings: Boot Option: Cold Boot
+  - Memory 1536 Mb (default)
+  - VM Heap 384 (default)
+  - Internal storage 800 Mb (default)
+  - SD Card: Studio managed 512 Mb (default)
+  - Enable Device Frame (default)
+  - Custom skin nexus_6 (default)
+  - Enable keyboard input  (default)
   - Finish will create the "Nexus 6" AVD.
-  - Tested by clicking Actions > - launch, on the |> button: [[file:flutter-notes.org_20210218_024926_KFkW02.png]] on the  "Nexus 6 API 29 2" AVD.
-** 5. Launch the Nexus_6_API_29_2 AVD from IIUI -> Tools -> Android -> AVD Manager 
+    - *but: no devices show in dropdown and clicking on |> the device does not start. Message "AVD Nexus_6_API_33 is already running. If that is not the case, delete the files at /home/mzimmermann/.android/avd/Nexus_6_API_33.avd/*.lock and try again."
+    - *MAYBE THE REAL SOLUTION IS TO WAIT, BUT I DID STUFF BELOW, DID NOT SEEM TO WORK, THEN ALL OF THE SUDDEN DEVICES STARTED TO SHOW UP*
+    - so deleted the lock files
+
+    - now clicking on |> starts a device in IIUI
+  - Tested by clicking Actions > - launch, on the |> button: [[file:flutter-notes.org_20210218_024926_KFkW02.png]] on the  "Nexus 6 API 33" AVD.
+
+Also: IIUI: Build project Ctrl-9: message: Compiler output not specified. Set it to /home/mzimmermann/tmp/iiui-project-compiler-output - but this seems unused
+ [[file:img/flutter-notes.org-iiui-build-compiler-output.png]
+
+ - But Ctrl-9 IIUI build still failed, message about configuring Kotlin. So I configured Kotlin, using defaults.
+ - This did not seem to do anything, build still fails with message: /home/mzimmermann/dev/my-projects-source/public-on-github/flutter_charts_v2/android/app/src/main/kotlin/org/flutter_charts/MainActivity.kt:3:19 Kotlin: Unresolved reference: embedding
+ - When I did "Open for editing in Android Studio", message: You can configure the Android Studio location via 'flutter config --android-studio-dir path-to-android-studio'.
+ - So I did : ~flutter config --android-studio-dir /home/mzimmermann/software/android/android-studio/~
+   REsult is only message:
+   Setting "android-studio-dir" value to "/home/mzimmermann/software/android/android-studio/".
+   You may need to restart any open editors for them to read new settings.
+ - *But build (Ctrl-9) is still failing, even though some other things work*
+ - *This was resolved by recreating the flutter_charts project from scratch*, see <file:~/dev/my-projects-source/public-on-github/flutter_experiments/doc/flutter-notes.org::*Next, to address above issues after new Android SDK installed, I recreated the flutter_charts : ~flutter create --template app flutter_charts~>
+ - The core benefit of the recreate is the "android" subproject is upgraded: New gradle (v4 to v7), new Kotlin, etc
+
+
+*** Next, to address above issues after new Android SDK installed, I recreated the flutter_charts : ~flutter create --template app flutter_charts~
+
+- mv flutter_charts_v2/ flutter_charts_v2_before_rerun_flutter_create_again
+- cd /dev/my-projects-source/public-on-github
+- flutter create --template app flutter_charts
+- mv flutter_charts flutter_charts_v2
+- Copied from flutter_charts_v2_before_rerun_flutter_create_again to  flutter_charts_v2
+  - All old directories and files override new, EXCEPT:
+    - android (exists in old, using new)
+    - linux
+    - macos
+    - web
+    - windows
+  - Notably using .idea-old, but creatively placed some files from the .idea-new.
+  - Renamed Emulator to the new Nexus_6_API_33.
+  - Then ran run_all_tests.sh - they succeeded but created a bit different images due to new emulator etc.
+
+
+*** IN-PROGRESS-NOW After recreating project (flutter create flutter_charts), *flutter_doctor* has minor issues
+
+mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts_v2> flutter doctor
+Doctor summary (to see all details, run flutter doctor -v):
+[✓] Flutter (Channel stable, 3.3.4, on openSUSE Tumbleweed 6.0.0-1-default, locale en_CA.UTF-8)
+[!] Android toolchain - develop for Android devices (Android SDK version 33.0.0)
+    ✗ cmdline-tools component is missing
+      Run `path/to/sdkmanager --install "cmdline-tools;latest"`
+      See https://developer.android.com/studio/command-line for more details.
+    ✗ Android license status unknown.
+      Run `flutter doctor --android-licenses` to accept the SDK licenses.
+      See https://flutter.dev/docs/get-started/install/linux#android-setup for more details.
+
+
+To resolve this:
+
+- Added to path ~export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH~
+- *Make sure to use sdkmanager from cmdline-tools!!*
+- Ran ~/home/mzimmermann/software/android/sdk-created-by-intellij-settings/cmdline-tools/latest/bin/sdkmanager --install "cmdline-tools;latest"~
+- Ran ~flutter doctor --android-licenses~
+
+    
+** 5.   Launch the Nexus_6_API_33 AVD from IIUI -> Tools -> Android -> Device Manager 
        
-** 6. Run the app - flutter_charts_sample_app *SECTION DESCRIBES SOLVING ISSUEs WITH the app NOT WORKING*
+** 6.   Run the app - flutter_charts_sample_app *SECTION DESCRIBES SOLVING ISSUEs WITH the app NOT WORKING*
        
 Clicking the |> run in IIUI: [[file:flutter-notes.org_20210218_152217_xTW6nY.png]]
      
@@ -577,23 +652,24 @@ After the above changes,both 6.3 and 6.4 errors are gone
        
 - In IIUI, this can be found in *File -> Settings -> Android SDK*
 - *This is different, and can have a different version from "Android SDK Platform-Tools"!!!*
-- On disk, this exists in *$ANDROID_HOME/build-tools/29.0.1*
-  #+begin_example
-  ls -l $ANDROID_HOME/build-tools:
-  total used in directory 12 available 66.5 GiB
-  drwxr-xr-x  5 mzimmermann users   48 Feb 18 02:38 .
-  drwxr-xr-x 15 mzimmermann users  252 Feb 19 00:49 ..
-  drwxr-xr-x  5 mzimmermann users 4096 Aug  5  2019 28.0.3
-  drwxr-xr-x  5 mzimmermann users 4096 Aug  4  2019 29.0.1
-  drwxr-xr-x  6 mzimmermann users 4096 Feb 18 02:38 30.0.3
-  #+end_example
+- On disk, this exists in *$ANDROID_HOME/build-tools/33.0*
+  #+begin_src sh
+  ls -l $ANDROID_HOME/build-tools
+  #+end_src
+
+  #+RESULTS:
+  | total      | 12 |             |       |      |     |    |       |        |
+  | drwxr-xr-x |  5 | mzimmermann | users | 4096 | Oct | 16 | 16:08 | 29.0.2 |
+  | drwxr-xr-x |  6 | mzimmermann | users | 4096 | Oct | 16 | 16:40 | 30.0.3 |
+  | drwxr-xr-x |  6 | mzimmermann | users | 4096 | Oct | 16 | 14:05 | 33.0.0 |
+
 - In build.gradle (ONLY in the flutter_charts_sample_app/android/app/build.gradle), this is the *buildToolsVersion '29.0.1'*
        
-** 8. Where is the virtual device (AVD) named in IIUI "Nexus 6 API 29 2" located and how to address it?
+** 8. Where is the virtual device (AVD) named in IIUI "Nexus 6 API 33" located and how to address it?
        
-- It is in */home/mzimmermann/.android/avd/Nexus_6_API_29_2.avd/* *!!!!!* 
+- It is in */home/mzimmermann/.android/avd/Nexus_6_API_33.avd/* *!!!!!* 
 - We can run app from command line as 
-- *cd test_app; flutter run -d Nexus_6_API_29_2*
+- *cd test_app; flutter run -d Nexus_6_API_33*
 - *cd test_app; flutter run -d all*
 - *but the device must be running separately - how? e.d. from IIUI Tools->Android->AVD Manager*
 - *To run an emulator, run ~flutter emulators --launch <emulator id>~ *
@@ -604,10 +680,10 @@ Ex: ~flutter emulators~ lists emulators
      
 2 available emulators:
      
-Nexus_6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
-Nexus_6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
+Nexus_6_API_33                      • Nexus 6 API 33                      • Google • android
+Nexus_6_API_33_-_Hardware_emulation • Nexus 6 API 33 - Hardware emulation • Google • android
      
-To run an emulator, run ~flutter emulators --launch <emulator id>~, for example: ~flutter emulators --launch 'Nexus_6_API_29_2'~
+To run an emulator, run ~flutter emulators --launch <emulator id>~, for example: ~flutter emulators --launch 'Nexus_6_API_33'~
      
 To create a new emulator, run ~flutter emulators --create [--name xyz]~
        
@@ -653,8 +729,8 @@ Runs code analyzes using linter. Outputs issues. Controlled by ~analysis_options
 ~flutter emulators~
 2 available emulators:
 
-Nexus_6_API_29_2                      • Nexus 6 API 29 2                      • Google • android
-Nexus_6_API_29_2_-_Hardware_emulation • Nexus 6 API 29 2 - Hardware emulation • Google • android
+Nexus_6_API_33                      • Nexus 6 API 33                      • Google • android
+Nexus_6_API_33_-_Hardware_emulation • Nexus 6 API 33 - Hardware emulation • Google • android
 
 To run an emulator, run 'flutter emulators --launch <emulator id>'.
 To create a new emulator, run 'flutter emulators --create [--name xyz]'.
@@ -663,9 +739,9 @@ To create a new emulator, run 'flutter emulators --create [--name xyz]'.
 
 Both terminals, ~cd shift2bid/anesthesiologist_app~
 
-- From terminal 1 : ~flutter emulators --launch Nexus_6_API_29_2_-_Hardware_emulation~
+- From terminal 1 : ~flutter emulators --launch Nexus_6_API_33_-_Hardware_emulation~
   - This will launch and get back to command line
-- From terminal 2 : ~flutter emulators --launch Nexus_6_API_29_2~
+- From terminal 2 : ~flutter emulators --launch Nexus_6_API_33~
   - *this must be a different named emulator, otherwise it joins the starter in 1*
 - ~flutter devices~
   2 connected devices:
@@ -679,7 +755,7 @@ Both terminals, ~cd shift2bid/anesthesiologist_app~
 
 https://www.gotomeet.me/AirliftGroup
 
-** ~flutter emulator --launch "Nexus_6_API_29_2"~
+** ~flutter emulator --launch "Nexus_6_API_33"~
 ** ~flutter format --line-length=120 lib example example1 test integration_test~
 ** ~flutter pub~
 pub is a tool for getting packages to users' systems, and also sharing packages users created with other users (by publishing).
@@ -750,10 +826,15 @@ See : https://docs.flutter.dev/development/tools/devtools/cli
 
 In Addition, some dev tools such as analyze, format, devices, and MANY OTHERS were moved to the ~flutter~ command, see https://docs.flutter.dev/reference/flutter-cli
 
-** ~flutter test~ and ~flutter drive~ - Testing in flutter - see https://flutter.io/testing/ 
-*** 1. Dart Unit test: Working setup for unit test from command line
+** ~flutter test~ and ~flutter drive~ - Testing in flutter - see https://flutter.io/testing/ and https://dart.dev/guides/testing
+*** 1. Dart Unit and Integration test: Working setup for unit test from command line
+
+See https://dart.dev/guides/testing for Dart and Flutter test types.
+
+To get tests working, I had to do:
+
 - deleted  ~/.pub-cache
-- ensured /etc/bash.bashrc.local has this commented OUT: ~export PUB_HOSTED_URL=http://localhost:8080~
+- ensured /etc/bash.bashrc.local has this commented OUT: ~export PUB_HOSTED_URL=http://localhost:8080~ WHAT IS THIS FOR?
 - cd flutter project to be tested
 - rm pubspec.lock
 - flutter clean
@@ -762,59 +843,119 @@ In Addition, some dev tools such as analyze, format, devices, and MANY OTHERS we
 - flutter test
 - *works!!*
 
-*** 2. Dart Integration test
-*** 3. ~flutter test~ 
-**** 3.1. Flutter widget test vs integration test: Command ~flutter test~ vs ~flutter drive~ and package ~flutter_test~ vs. ~integration_test~
+There is no real distinction between Dart Unit and Integration tests. The distinction is somewhat about how a test is written and what libraries it uses.
+
+Dart tests can be run as 
+
+~dart test test/util/string_extension_test.dart  --reporter expanded~ - to run one test
+~dart test~ - to run all tests
+
+BUT if Flutter code is present, the above has errors on them.
+
+So it is better to ALWAYS run ~flutter test~ instead of ~dart test~.
+
+~flutter test --reporter expanded~ - runs all tests in the ~test~ directory, and lists each test as it runs. 
+~flutter test test/util/y_labels_test.dart --reporter expanded~ - runs the named test and lists each test name as it runs. 
+
+*** 2. Flutter *widget test* vs. Flutter *integration test*
+**** 2.1. Flutter widget test vs integration test: Command ~flutter test~ vs ~flutter drive~ and package ~flutter_test~ vs. ~integration_test~
 
 tl;dr: Flutter widget testing vs. Flutter integration testing. There are 2 types of Flutter tests: Widget, and Integration. 
 - *Widget tests*: 
   - Should be in top level ~test~ directory. 
   - Do NOT need emulator or device connected - NO UI
-  - Run as ~flutter test test/chart_widget_test.dart~
+  - Run as ~flutter test test/widget_test.dart~
 
 - *Integration tests AKA Drive tests*
   - Should be in top level ~integration_test~ directory. 
   - NEED emulator or device connected
-  - Run as ~flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart~ 
-
+  - Run one test (which includes all ex10-ex999 examples) as 
+    ~flutter drive \
+      --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart~ 
+  - To run one test and one example ex34OptionsDefiningUserTextStyleOnLabels, as 
+    ~flutter drive --dart-define=EXAMPLE_TO_RUN=ex34OptionsDefiningUserTextStyleOnLabels --dart-define=CHART_TYPE_TO_SHOW=lineChart \
+      --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart~
 
 More details:
 
-1. The names *drive* and *driver* in this context refer to a class FlutterDriver, which allows to control an application running in another process. For example, FlutterDriver can control and Android application running inside Android or Android emulator
+***** The names *drive* and *driver* in this context refer to a class FlutterDriver, which allows to control an application running in another process. *FlutterDriver can control and Android application running inside Android or Android emulator*
 
-2. Flutter *Widget tests* vs. *Integration tests AKA Drive tests*
+***** Flutter *Widget tests* vs. *Integration tests* vs *Integration tests with Drive*
 
-   1. ~flutter test~ runs *Widget or page testing, can test and set widget properties, etc*.  Runs the app inside a Flutter process, NOT inside Android or IOS or Web process. */flutter test/ DOES tests Flutter Widgets with NO UI, but can NOT test native functions of the app, such as screenshots, native plugins, etc* 
+   1. *Widget tests* - ~flutter test test/etc~ 
+
+      - Ex: ~flutter test test/widget_test.dart~ 
+
+      - *UI NOT NEEDED OR USED (no device running needed)* - the process does NOT run on the device, just on the computer!!. 
+
+      - Runs *Widget or page testing, can test and set widget properties, etc*.
+
+      - Runs the app inside a Flutter process, NOT inside Android or IOS or Web process. 
+
+      - Can test a single Widget (how??), unlike 2., which needs the whole main.dart to run!
 
       - Tests should be in top level ~test~ directory. 
 
       - Uses package ~import 'package:flutter_test/flutter_test.dart';~
 
-   2. ~flutter drive~ runs *Integration testing which allows access to native functions such as screenshots via native drive(r)*. 
+   2. *Integration tests* - ~flutter test integration_test/etc~
+      
+      - Ex: ~flutter test integration_test/screenshot_create_test.dart~
 
+      - *NEEDS UI (device running)* - the process runs on the device (Android etc), but CANNOT interact with anything on the computer (e.g. take screenshots and save them on computer)!
+
+      - *Notice the only difference from 1. is this test is now in the top level ~integration_test~ directory, and also the test uses the integration_test_driver_extended.dart*
+
+      - Uses packages ~import 'package:flutter_test/flutter_test.dart';~ (as does 1.), and in addition, uses ~import 'package:integration_test/integration_test.dart'~
+
+      - Runs on Android, and can do widget testing as 1. *Not sure what useful it does in addition to 1., except user can see the app UI when tested*
+
+   3. *Integration tests with Drive* - ~flutter drive --driver=etc --target=etc~ 
+
+      - Ex: ~flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart~ 
+
+      - *NEEDS UI (device running)* - the process runs on the device (Android etc), and CAN interact with computer! The *FlutterDriver/integrationDriver* runs on the computer and drives / interacts with the running integration test.
+
+      - Does Integration testing which also allows access to native functions such as screenshots via native Android drive(r) such as SomeDriver.java. 
+
+      - *Notice the only difference from 2. is that the --driver is now added. This driver can control the running test*
+      
       - Tests should be in top level ~integration_test~ directory. 
 
-      - *DOES test native elements such as screenshots, native plugins, etc but can NOT test setting Flutter widgets*.
+      - The --target is same as the test in 2. and uses the same packages, including the ~integration_test.dart~! - see item 2.
+
+      - The --driver uses package ~import 'package:integration_test/integration_test_driver_extended.dart';~. ~ OR just ~integration_test_driver.dart~.
+
+      - DOES test native elements such as screenshots, native plugins, etc but can NOT test setting Flutter widgets.
 
       - Runs the app inside a separate native process (not in Flutter!), and uses /FlutterDriver/ class to control the natively run app from Flutter.  
 
-      - *integration testing should be called *native_testing* or *driver_based_testing*
-
-      - Uses package ~import 'package:integration_test/integration_test_driver_extended.dart';~.
+      - This testing could be called *native_testing* or *driver_based_testing
 
       - When called: 
         - The code in package ~test_driver/integration_test.dart~ is called, which instantiates native plugins, such as *gitclone/flutter/integration_test/android/src/main/java/dev/flutter/plugins/integration_test/FlutterDeviceScreenshot.java*.
 
         - The run internally uses /flutter_driver.dart/ a package which provides API to test Flutter applications that run on real devices and emulators. The tested application runs in a separate process from the test itself. *Flutter drive is Flutter's version of Selenium WebDriver (generic web), Protractor (Angular), Espresso (Android) or Earl Gray (iOS).*
 
+
 From https://stackoverflow.com/questions/62635696/flutter-widget-vs-flutter-driver
 
-Today I use both flutter_test (launched on real device with integration_test) and real flutter_driver tests:
+Today I use both ~flutter test~ (launched on real device with integration_test) and real ~flutter drive~ tests:
 
 I write widget tests to check a single widget, or a single page,
 I use flutter driver to write more sophisticated scenarios to test the whole application.
     
-**** 3.2. Flutter integration test, showing sample project with tests, including screenshots
+POSSIBLE ERROR - 'dart:ui' flutter libraries are not allowed in any flutter-driver-tests!!! "or" in any classes that "provide"(via import) elements for these flutter-driver-tests             
+
+Errors on e.g.
+- package:flutter/cuppertino    
+- import 'dart:ui' as ui show BoxWidthStyle;
+- package:flutter/MATERIAL    
+- import 'dart:ui' show lerpDouble;         
+- package:flutter/WIDGETS - ERRO:        
+-  export 'dart:ui' show hashValues, hashList
+                                           
+**** 2.2. Flutter integration test, showing sample project with tests, including screenshots
 
 Here we describe how to add integration testing to Dart and Flutter, and specific Flutter testing (*Using flutter_test, which I think means bot integration and unit testing in Flutter*).
 
@@ -862,7 +1003,7 @@ Here we describe how to add integration testing to Dart and Flutter, and specifi
             "}\n"   > test_driver/integration_test.dart
 
           #+end_src
-       2. run this script to create one integration test called /screenshot_test.dart/
+       2. run this script to create one integration test called /screenshot_create_test.dart/
           #+begin_src bash
                      mkdir integration_test
                      echo -ne \
@@ -886,32 +1027,32 @@ Here we describe how to add integration testing to Dart and Flutter, and specifi
             "await tester.pumpAndSettle();\n" \
             "await binding.takeScreenshot('screenshot-1');\n" \
             "});\n" \
-            "}\n"  > integration_test/screenshot_test.dart
+            "}\n"  > integration_test/screenshot_create_test.dart
           #+end_src
    - Also see https://dev.to/mjablecnik/take-screenshot-during-flutter-integration-tests-435k and https://blog.codemagic.io/flutter-automated-screenshot-testing/
 4. Run the test (which creates screenshot) from command line 
 #+BEGIN_SRC shell
   cd dev/my-projects-source/public-on-github/screenshot
-  flutter emulator --launch "Nexus_6_API_29_2"
+  flutter emulator --launch "Nexus_6_API_33"
   sleep 20
   flutter clean 
   flutter pub get
-  flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart # screenshot-1.png created
+  flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart # screenshot-1.png created
 #+END_SRC  - 
 7. *How to run integration tests*. Integration test can run on the device or on the computer.
   - On Android device (emulated or physical):
     ~./gradlew app:connectedAndroidTest -Ptarget=`pwd`/../integration_test/foo_test.dart~
   - On computer without test_driver
-    ~flutter test integration_test/screenshot_test.dart~
+    ~flutter test integration_test/screenshot_create_test.dart~
   - On computer with test_driver (needed e.g. for screenshot)
-    ~flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart~  *THIS IS HOW TO GET SCREENSHOT screenshot-1.png*
+    ~flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart~  *THIS IS HOW TO GET SCREENSHOT screenshot-1.png*
 
 
-flutter emulator --launch "Nexus_6_API_29_2"
+flutter emulator --launch "Nexus_6_API_33"
 sleep 20
 flutter clean 
 flutter pub get
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart
 
 ** Package dependencies - any - resolving dependencies the right way, e.g. flutter_charts
 
@@ -954,35 +1095,7 @@ flutter drive --driver=test_driver/integration_test.dart --target=integration_te
     uses-material-design: true
   #+END_SRC
 
-- change all dependencies to "any" like this:
-
-  #+BEGIN_SRC yaml
-  name: flutter_charts
-  version: 0.1.8
-  description: Charts Library for Flutter, written in Dart with Flutter.
-  author: Milan Zimmermann <milan.zimmermann@gmail.com>
-  homepage: https://github.com/mzimmerm/flutter_charts/
-  publish_to: https://pub.dartlang.org
-  documentation: https://pub.dartlang.org/packages/flutter_charts/doc
-  
-  dependencies:
-    flutter:
-      sdk:  flutter
-    decimal: any
-    vector_math: any
-  
-  dev_dependencies:
-    test:
-    flutter_test:
-      sdk:  flutter
-  
-  environment:
-    # Declare it works in Dart 2 only.
-    sdk: '>=2.0.0 <3.0.0'
-  
-  flutter:
-    uses-material-design: true
-  #+END_SRC
+- change all dependencies to "any" is not recommended (why?)
 
 - run ~flutter pub get~ # The pub seems needed, otherwise error
 
@@ -1009,6 +1122,8 @@ flutter drive --driver=test_driver/integration_test.dart --target=integration_te
 
 ** Obsolete note
 This used to be ~dart_dev tools~ : analyze, format, test, See https://pub.dev/packages/dart_dev . Note: *2021-12-05: This package is not null safe, so unusable for me*
+
+Replaced with ~flutter analyze~, ~flutter format~, etc
 
 ** Emulators and Apps from command line - see also https://medium.com/flutter-community/flutter-and-the-command-line-a-love-story-a3648ef2411
 
@@ -1776,7 +1891,6 @@ I was using incorrectly
 -     instead of the correct
 - onPressed: _popupCaseFilterDialog,
   
-
 * Local runs of pub server, dartdoc, other tools
 
    =run pub server localhost=
@@ -2311,7 +2425,6 @@ TEST
 
 
 
-
 * Issues: Ask on stackoverflow or report issues
 
 ** IN-PROGRESS-NOW Issue: Presence of a directory named `example` destroys ability to run `flutter drive` integration test.
@@ -2326,20 +2439,20 @@ My retesting on screenshot project - I will test beta, dev, master in that order
 - [X] flutter channel beta
   - [X] Exit emulator
   - [X] flutter upgrade
-  - [X] flutter emulator --launch "Nexus_6_API_29_2"; sleep 20
-  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+  - [X] flutter emulator --launch "Nexus_6_API_33"; sleep 20
+  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart
   - [X] *failed*
 - [X] flutter channel dev
   - [X] Exit emulator
   - [X] flutter upgrade
-  - [X] flutter emulator --launch "Nexus_6_API_29_2"; sleep 20
-  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+  - [X] flutter emulator --launch "Nexus_6_API_33"; sleep 20
+  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart
   - [X] *failed*
 - [X] flutter channel master
   - [X] Exit emulator
   - [X] flutter upgrade
-  - [X] flutter emulator --launch "Nexus_6_API_29_2"; sleep 20
-  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+  - [X] flutter emulator --launch "Nexus_6_API_33"; sleep 20
+  - [X] flutter clean; flutter pub upgrade; flutter pub get; flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_create_test.dart
   - [X] *failed*
 * IN-PROGRESS-NOW Mixins
 
@@ -2409,7 +2522,6 @@ class VerticalBarChartOptions extends ChartOptions {
 
 #+end_src
 
-
 * IN-PROGRESS-NOW final fields which we cannot initialize in the initializer list, because we want to delay it (even just to the constructor)
 
 example:
@@ -2447,7 +2559,6 @@ I want them final, yet, not always passed down.
 
  
 IN FACT EVEN THIS FAILS AT RUNTIME. dataRowsColors CAN NOT BE EVEN FINAL.
-
 
 
 * Construcrors
