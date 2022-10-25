@@ -445,7 +445,7 @@ Also: IIUI: Build project Ctrl-9: message: Compiler output not specified. Set it
   - Then ran run_all_tests.sh - they succeeded but created a bit different images due to new emulator etc.
 
 
-*** IN-PROGRESS-NOW After recreating project (flutter create flutter_charts), *flutter_doctor* has minor issues
+*** After recreating project (flutter create flutter_charts), *flutter_doctor* has minor issues
 
 mzimmermann@home-server:~/dev/my-projects-source/public-on-github/flutter_charts_v2> flutter doctor
 Doctor summary (to see all details, run flutter doctor -v):

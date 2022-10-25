@@ -12,10 +12,11 @@ environment:
 dependencies:
   flutter:
     sdk:  flutter
-  decimal: ^1.0.0
+  decimal: ^2.1.0
   vector_math: ^2.1.0
   tuple: ^2.0.0
-  path_provider: ^2.0.0 # Read/Write files from Flutter to Android filesystem.
+  # 2022-02-05 : Fix issue *Error: No named parameter with the name 'displayLarge'.* google_fonts: ^2.2.0
+  google_fonts: 2.2.0
 
 # Example of dependency on another project: local, GitHub, locally hosted on own pub server on 8080,
 #
@@ -52,7 +53,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
   lints: ^1.0.1 # Note: lint rules == analyzer rules, define them in analysis_options.yaml
-  analyzer: ^2.8.0
+  # 2022-10-10-removed-as-flutter-pub-upgrade-fails analyzer: ^2.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
