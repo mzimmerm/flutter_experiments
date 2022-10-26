@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:path_provider/path_provider.dart'; // Allows to write to Android filesystem
+// import 'package:path_provider/path_provider.dart'; // Allows to write to Android filesystem
 // import 'package:path_provider_android/path_provider_android.dart'; // Allows to write to Android filesystem
 import 'dart:io' as io show File, Directory, FileMode;
 import 'dart:async';
@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
 void writeToAndroidData(String fileName, Object data) {
   getAndroidFilepathAndAppendString(
     fileName,
-    data.toString() + '\n',
+    '$data\n',
   );
   print('File written out.'); // LATER-LATER: 9 - WHEN AWAIT AT
 }

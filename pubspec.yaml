@@ -4,6 +4,7 @@ description: Flutter Experiments.
 # 2021-121-10 : Flutter channel stable has : Flutter 2.8.0, Dart 2.15.0
 #               sdk means Dart sdk version.
 #               opt in to dart null safety - sdk >=2.12.0
+# 2022-10-26 moved from 2.15.0 to 2.17.0
 environment:
   sdk: '>=2.15.0 <3.0.0'
 

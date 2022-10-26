@@ -29,44 +29,72 @@ class MyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      // start, center, end, spaceAround, spaceBetween, spaceEvenly: start default.
-      //    space(Around, between, evenly) is like my flow
-        mainAxisAlignment: MainAxisAlignment.end,
-        // start, center, end, baseline, stretch : seems irrelevant
-        crossAxisAlignment: CrossAxisAlignment.end,
+
+    return
+    Column(
+    mainAxisAlignment:  MainAxisAlignment.spaceBetween,
+    children: [
+        Text('COLUMN BEGINS', style: Theme.of(context).textTheme.bodyLarge),
+
+    Row(
+       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+       children:
+        [
+         Text('ROW BEGINS', style: Theme.of(context).textTheme.bodyLarge),
+
+    Row(
+      // Only the top level Row alignment seems to matter!! Rows indented all behave as MainAxisAlignment.left.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         textDirection: TextDirection.ltr,
-        // min, max : max is default; min centers
         mainAxisSize: MainAxisSize.max,
         children: [
-          legendItem('111111111111111', context),
+          legendItem('11', context), // 111111111111111
           legendItem('22', context),
-          legendItem('33', context),
-        ]);
+          // legendItem('33', context),
+          Text('NEXT!', style: Theme.of(context).textTheme.bodyLarge)
+
+        ]
+    )
+    ])
+
+  ])
+    ;
   }
 
   Widget legendItem(String id, BuildContext context) {
     //
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        textDirection: TextDirection.ltr,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Text(
-            'Hello $id! ',
-            style: Theme
-                .of(context)
-                .textTheme
-                .bodyLarge,
-          ),
-          Text(
-            'Again!',
-            style: Theme
-                .of(context)
-                .textTheme
-                .bodyLarge,
-          ),
-        ]);
+    return
+      // Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+//      Expanded(
+//        child:
+
+        Row(
+          // start, center, end, spaceAround, spaceBetween, spaceEvenly :: start default.
+          //    space(Around, between, evenly) is like my flow
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // start, center, end, baseline, stretch :: center default.
+            //         start, end, center : the same result.
+            //         baseline : error.
+            //         stretch : jumps to top
+            crossAxisAlignment: CrossAxisAlignment.center,
+            textDirection: TextDirection.ltr,
+            // min, max : max is default; min centers
+            mainAxisSize: MainAxisSize.max,
+            children: [
+     // Expanded(
+     //   child:
+          Text('Hello $id! ', style: Theme.of(context).textTheme.bodyLarge)
+          //  )
+          ,
+   // Expanded(
+   // child:
+          Text('Again!', style: Theme.of(context).textTheme.bodyLarge)
+          //  )
+    ,
+            ])
+//      ])
+//      )
+    ;
   }
 }
